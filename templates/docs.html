@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<!-- служебная часть -->
+
+<head>
+    <!-- заголовок страницы -->
+    <title>Текстовый редактор</title>
+    <!-- настраиваем служебную информацию для браузеров -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- задаём CSS-стили прямо здесь же, чтобы всё было в одном файле -->
+    <style>
+        /*задаём общие параметры для всей страницы: шрифт и отступы*/
+        body {
+            text-align: left;
+            margin: 10px;
+            font-family: Courier New, Courier, sans-serif;
+            font-size: 20px;
+            background-color: lightgray;
+        }
+
+        /* оформляем окно редактора */
+        .editorSheet {
+            width: 80vw;
+            min-height: 100vw;
+            margin-left: 10vw;
+            border: 0 solid;
+            text-align: left;
+            background-color: white;
+            -webkit-box-shadow: 6px 10px 9px 0 rgba(0, 0, 0, 0.75);
+            -moz-box-shadow: 6px 10px 9px 0 rgba(0, 0, 0, 0.75);
+            box-shadow: 6px 10px 9px 0 rgba(0, 0, 0, 0.75);
+            padding: 15px;
+        }
+
+        h1 {
+            font-size: 40px;
+            font-family: Tahoma, sans-serif;
+            font-weight: 900;
+        }
+
+        /*закончили со стилями*/
+    </style>
+    <!-- закрываем служебную часть страницы -->
+</head>
+<!-- началось содержимое страницы -->
+
+<body>
+<h1>Текстовый редактор с автосохранением</h1>
+
+<form id="chapterForm" action="/publish_chapter" method="POST">
+    <!-- Скрытое поле для текста -->
+    <input type="hidden" id="chapterContent" name="content">
+
+    <!-- Редактор -->
+    <div id="editor" contenteditable="true" class="editorSheet"></div>
+    <br>
+
+    <!-- Поля формы -->
+    <input type="text" name="author" placeholder="Ваше имя" required>
+    <button type="submit">Опубликовать</button>
+</form>
+
+<script>
+    // Автосохранение в localStorage
+    if (localStorage.getItem('text_in_editor') !== null) {
+        document.getElementById('editor').innerHTML = localStorage.getItem('text_in_editor');
+    }
+
+    document.addEventListener('keydown', function (e) {
+        localStorage.setItem('text_in_editor', document.getElementById('editor').innerHTML);
+    });
+
+    // Обработка отправки формы
+    document.getElementById('chapterForm').addEventListener('submit', function (e) {
+        // Копируем содержимое редактора в скрытое поле
+        document.getElementById('chapterContent').value = document.getElementById('editor').innerHTML;
+
+        // // Можно добавить дополнительную проверку данных
+        // if (document.getElementById('editor').innerText.trim().length < 10) {
+        //     alert('Текст слишком короткий!');
+        //     e.preventDefault(); // Отменяем отправку
+        // }
+    });
+</script>
+</body>
+<!-- конец всего HTML-документа -->
+
+</html>
