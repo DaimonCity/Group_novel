@@ -73,6 +73,7 @@ def publish_chapter():
     raw_content = request.form['content']
     author = request.form['author']
 
+
     # Очистка HTML (опционально)
     clean_content = BeautifulSoup(raw_content, "html.parser").get_text()
     print(clean_content)
