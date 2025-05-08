@@ -23,8 +23,7 @@ def load_user(user_id):
 @app.route('/')
 def index():
     db_sess = db_session.create_session()
-    chapters = [char for char in db_sess.query(Chapter).all()]
-    print(chapters)
+    chapters = [char for char in db_sess.query(Chapter).all() if char.status == 0]
     return render_template('index.html', chapters=chapters)
 
 
@@ -40,6 +39,7 @@ def add_chapter():
     author = flask_login.current_user.name
     if content and author:
         new_chapter = Chapter(content=content, author=author)
+
         db_sess.add(new_chapter)
         db_sess.commit()
 
@@ -73,7 +73,6 @@ def publish_chapter():
 
     # Очистка HTML (опционально)
     clean_content = BeautifulSoup(raw_content, "html.parser").get_text()
-    print(clean_content)
     if clean_content and author:
         db_sess = db_session.create_session()
         new_chapter = Chapter(content=clean_content, author=author)
