@@ -21,10 +21,12 @@
 {% for chapter in chapters %}
 <div class="chapter">
     <p>{{ chapter.content }}</p>
-    <small>Автор: {{ chapter.author }} | Дата: {{ chapter.date.strftime('%d.%m.%Y') }} | Голоса: {{ chapter.votes
-        }}</small>
+    <small>Автор: {{ chapter.author }} | Дата: {{ chapter.date.strftime('%d.%m.%Y') }} | Голоса: {{ chapter.votes }}</small>
     <a href="/vote/{{ chapter.id }}">
-        <button class="vote-btn">+1</button>
+        <button class="vote-btn">👍</button>
+    </a>
+    <a href="/continue_chapter/{{ chapter.id }}">
+        <button class="vote-btn">Продолжить</button>
     </a>
 </div>
 {% endfor %}

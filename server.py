@@ -13,10 +13,7 @@ app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-@login_manager.user_loader
-def get_id(user_id):
-    print('!!!!', user_id)
-    return  user_id
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -51,11 +48,21 @@ def add_chapter():
 
 @app.route('/vote/<int:chapter_id>')
 def vote(chapter_id):
-    chapter = Chapter.query.get(chapter_id)
-    chapter.votes += 1
     db_sess = db_session.create_session()
+    chapter = db_sess.query(Chapter).get(chapter_id)
+    chapter.votes += 1
     db_sess.commit()
     return redirect(url_for('index'))
+
+@app.route('/continue_chapter/<int:chapter_id>')
+def continue_chapter(chapter_id):
+    db_sess = db_session.create_session()
+    chapter = db_sess.query(Chapter).get(chapter_id)
+    chapter.votes += 1
+    db_sess.commit()
+    return redirect(url_for('index'))
+
+
 
 
 @app.route('/publish_chapter', methods=['POST'])
