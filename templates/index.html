@@ -1,26 +1,22 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <title>Коллективный роман</title>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="../static/index.css">
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block content %}
 <h1>Коллективный роман</h1>
 
 <form action="/add_chapter" method="POST">
     <h3>Добавить главу:</h3>
     <textarea name="content" rows="5" cols="80" required></textarea><br>
-    <input type="text" name="author" placeholder="Ваше имя" required><br>
-    <button type="submit">Опубликовать</button>
+    <input type="text" name="author" placeholder="поменять на автоввод" required><br>
+    {% if current_user.is_authenticated %}
+        <button type="text" name="author" required>Опубликовать</button>
+    {% else %}
+        <p>
+            <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
+            <a class="btn btn-success" href="/login">Войти</a>
+        </p>
+    {% endif %}
 </form>
 
-<form action="/login" method="POST">
-    <button type="submit">Войти</button>
-</form>
-<form action="/register" method="POST">
-    <button type="submit">Зарегестрироваться</button>
-</form>
 
 <h2>Все главы:</h2>
 {% for chapter in chapters %}
@@ -33,5 +29,4 @@
     </a>
 </div>
 {% endfor %}
-</body>
-</html>
+{% endblock %}

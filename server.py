@@ -14,6 +14,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///novel.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -132,5 +133,5 @@ def logout():
 
 
 if __name__ == '__main__':
-    db_session.global_init("db/blogs.db")
+    db_session.global_init("db/user.db")
     app.run(debug=True)
