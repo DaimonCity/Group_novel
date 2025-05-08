@@ -6,7 +6,6 @@
 <form action="/add_chapter" method="POST">
     <h3>Добавить главу:</h3>
     <textarea name="content" rows="5" cols="80" required></textarea><br>
-    <input type="text" name="author" placeholder="поменять на автоввод" required><br>
     {% if current_user.is_authenticated %}
         <button type="text" name="author" required>Опубликовать</button>
     {% else %}

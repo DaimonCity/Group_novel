@@ -1,3 +1,4 @@
+import flask_login
 from flask import Flask, render_template, request, redirect, url_for
 from bs4 import BeautifulSoup
 from flask_login import login_user, login_required, logout_user, UserMixin, LoginManager
@@ -12,6 +13,10 @@ app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+@login_manager.user_loader
+def get_id(user_id):
+    print('!!!!', user_id)
+    return  user_id
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -33,9 +38,9 @@ def editor():
 
 @app.route('/add_chapter', methods=['POST'])
 def add_chapter():
-    content = request.form['content']
-    author = request.form['author']
     db_sess = db_session.create_session()
+    content = request.form['content']
+    author = flask_login.current_user.name
     if content and author:
         new_chapter = Chapter(content=content, author=author)
         db_sess.add(new_chapter)
@@ -120,5 +125,6 @@ def logout():
 
 
 if __name__ == '__main__':
+    print(id)
     db_session.global_init("db/main.db")
     app.run(debug=True)
