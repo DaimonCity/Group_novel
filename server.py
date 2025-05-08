@@ -1,35 +1,17 @@
-from flask import Flask, render_template, request, redirect, url_for, render_template_string
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for
 from bs4 import BeautifulSoup
-from flask_login import LoginManager, login_user, login_required, logout_user
-from data.users import User
+from flask_login import login_user, login_required, logout_user, UserMixin, LoginManager
 from forms.user import RegisterForm
 from forms.login import LoginForm
-
 from data import db_session
+from data.users import User
+from data.chapters import Chapter
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///novel.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-# Модель для главы
-class Chapter(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.Text, nullable=False)
-    author = db.Column(db.String(50), nullable=False)
-    votes = db.Column(db.Integer, default=0)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
-
-
-# Создаем базу данных
-with app.app_context():
-    db.create_all()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -38,7 +20,9 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
-    chapters = Chapter.query.order_by(Chapter.date.desc()).all()
+    db_sess = db_session.create_session()
+    chapters = [char for char in db_sess.query(Chapter).all()]
+    print(chapters)
     return render_template('index.html', chapters=chapters)
 
 
@@ -51,11 +35,11 @@ def editor():
 def add_chapter():
     content = request.form['content']
     author = request.form['author']
-
+    db_sess = db_session.create_session()
     if content and author:
         new_chapter = Chapter(content=content, author=author)
-        db.session.add(new_chapter)
-        db.session.commit()
+        db_sess.add(new_chapter)
+        db_sess.commit()
 
     return redirect(url_for('index'))
 
@@ -64,7 +48,8 @@ def add_chapter():
 def vote(chapter_id):
     chapter = Chapter.query.get(chapter_id)
     chapter.votes += 1
-    db.session.commit()
+    db_sess = db_session.create_session()
+    db_sess.commit()
     return redirect(url_for('index'))
 
 
@@ -78,9 +63,10 @@ def publish_chapter():
     clean_content = BeautifulSoup(raw_content, "html.parser").get_text()
     print(clean_content)
     if clean_content and author:
+        db_sess = db_session.create_session()
         new_chapter = Chapter(content=clean_content, author=author)
-        db.session.add(new_chapter)
-        db.session.commit()
+        db_sess.add(new_chapter)
+        db_sess.commit()
         # Очищаем localStorage после успешной отправки
         return redirect(url_for('editor'))
 
@@ -134,5 +120,5 @@ def logout():
 
 
 if __name__ == '__main__':
-    db_session.global_init("db/user.db")
+    db_session.global_init("db/main.db")
     app.run(debug=True)
