@@ -12,4 +12,4 @@ class Chapter(SqlAlchemyBase, UserMixin):
     author = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     votes = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow)
-    status = sqlalchemy.Column(sqlalchemy.Integer, default=0) # 0-первая глава 1-продолжениеб 2-концовка
+    state = sqlalchemy.Column(sqlalchemy.Integer, default=0) # 0-первая глава 1-продолжениеб 2-концовка
