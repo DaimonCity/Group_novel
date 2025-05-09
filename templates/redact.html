@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<form action="/save_redact" method="GET">
+    <!-- Скрытое поле для текста -->
+    <p>name:</p>
+    <input name="name"><br>
+    <p>about:</p>
+    <input name="about">
+    <br>
+    <!-- Редактор -->
+    <br>
+    <a href="/save_redact/{{ name }} {{ about }}">
+        <button>сохранить</button>
+    </a>
+</form>
+{% endblock %}

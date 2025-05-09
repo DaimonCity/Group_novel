@@ -8,19 +8,52 @@
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
           crossorigin="anonymous">
     <title>{{title}}</title>
+
+    <style>
+        /*задаём общие параметры для всей страницы: шрифт и отступы*/
+        body {
+            text-align: left;
+            margin: 10px;
+            font-family: Courier New, Courier, sans-serif;
+            font-size: 20px;
+            background-color: lightgray;
+        }
+
+        /* оформляем окно редактора */
+        .editorSheet {
+            width: 50vw;
+            min-height: 100vw;
+            margin-left: 0vw;
+            border: 0 solid;
+            text-align: left;
+            background-color: white;
+            -webkit-box-shadow: 6px 10px 9px 0 rgba(0, 0, 0, 0.75);
+            -moz-box-shadow: 6px 10px 9px 0 rgba(0, 0, 0, 0.75);
+            box-shadow: 6px 10px 9px 0 rgba(0, 0, 0, 0.75);
+            padding: 15px;
+        }
+
+        h1 {
+            font-size: 40px;
+            font-family: Tahoma, sans-serif;
+            font-weight: 900;
+        }
+
+        /*закончили со стилями*/
+    </style>
 </head>
 <body>
 <header>
     <nav class="navbar navbar-light bg-light">
         <a class="navbar-brand" href="#">Novelstation/Storystation</a>
         {% if current_user.is_authenticated %}
-    <a class="navbar-brand" href="/logout" >{{ current_user.name }}</a>
-{% else %}
-    <p>
-        <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
-        <a class="btn btn-success" href="/login">Войти</a>
-    </p>
-{% endif %}
+            <a class="navbar-brand" href="/profile/{{ current_user.id }}" >{{ current_user.name }}</a>
+        {% else %}
+            <p>
+                <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
+                <a class="btn btn-success" href="/login">Войти</a>
+            </p>
+        {% endif %}
     </nav>
 </header>
 <!-- Begin page content -->

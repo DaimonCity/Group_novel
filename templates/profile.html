@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <p>name: {{ user.name }}</p>
+    <p>date: {{ user.created_date }}</p>
+    <p>about: {{ user.about }}</p>
+    <p>mail: {{ user.email }}</p>
+    <p>index: {{ user.id }}</p>
+
+<!--    {% if user.id == current_user.id %}-->
+<!--        <a href="/redact">-->
+<!--            <button>Настройка акаунта</button>-->
+<!--        </a>-->
+<!--    {% endif %}-->
+    <form action="/">
+        <button>назад</button>
+    </form>
+{% endblock %}

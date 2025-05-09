@@ -6,24 +6,22 @@
 <form id="chapterForm" action="/add_chapter" method="POST">
     <!-- Скрытое поле для текста -->
     <input type="hidden" id="chapterContent" name="content">
+    <br>
 
     <!-- Редактор -->
     <div id="editor" contenteditable="true" class="editorSheet"></div>
-    <br>
 
     <!-- Поля формы -->
+    <br>
     {% if current_user.is_authenticated %}
         <button type="text" name="author" required>Опубликовать</button>
     {% else %}
-        <p>
-            <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
-            <a class="btn btn-success" href="/login">Войти</a>
-        </p>
+        <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
+        <a class="btn btn-success" href="/login">Войти</a>
     {% endif %}
+    <form action="/">
+        <button>назад</button>
     </form>
-
-<form action="/">
-    <button>назад</button>
 </form>
 
 <script>

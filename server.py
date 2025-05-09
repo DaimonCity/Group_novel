@@ -138,6 +138,34 @@ def login():
 def logout():
     logout_user()
     return redirect("/")
+@app.route('/profile/<int:id>')
+@login_required
+def profile(id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).get(id)
+    return render_template('profile.html', user=user, title=f"{user.name}'s Profile")
+
+
+
+@app.route('/redact')
+@login_required
+def redact():
+    # db_sess = db_session.create_session()
+    # user = db_sess.query(User).get(id)
+    form = RegisterForm()
+    return render_template('redact.html', title=f"redact rofile", form=form)
+@app.route('/save_redact/<string:name><string:about>')
+@login_required
+def save_redact(name, about):
+    db_sess = db_session.create_session()
+    # user_id = flask_login.current_user.id
+    print(name, about, '!!!!!!')
+    # if name:
+    #     db_sess.query(User).get(user_id).update({'name': name})
+    # if about:
+    #     db_sess.query(User).get(user_id).update({'about': about})
+    db_sess.commit()
+    # return redirect(url_for('profile', id=user_id))
 
 
 if __name__ == '__main__':
