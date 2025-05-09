@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Текстовый редактор с автосохранением</h1>
+
+<form id="chapterForm" action="/add_chapter" method="POST">
+    <!-- Скрытое поле для текста -->
+    <input type="hidden" id="chapterContent" name="content">
+
+    <!-- Редактор -->
+    <div id="editor" contenteditable="true" class="editorSheet"></div>
+    <br>
+
+    <!-- Поля формы -->
+    {% if current_user.is_authenticated %}
+        <button type="text" name="author" required>Опубликовать</button>
+    {% else %}
+        <p>
+            <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
+            <a class="btn btn-success" href="/login">Войти</a>
+        </p>
+    {% endif %}
+    </form>
+
+<form action="/">
+    <button>назад</button>
+</form>
+
+<script>
+    // Автосохранение в localStorage
+    if (localStorage.getItem('text_in_editor') !== null) {
+        document.getElementById('editor').innerHTML = localStorage.getItem('text_in_editor');
+    }
+
+    document.addEventListener('keydown', function (e) {
+        localStorage.setItem('text_in_editor', document.getElementById('editor').innerHTML);
+    });
+
+    // Обработка отправки формы
+    document.getElementById('chapterForm').addEventListener('submit', function (e) {
+        // Копируем содержимое редактора в скрытое поле
+        document.getElementById('chapterContent').value = document.getElementById('editor').innerHTML;
+
+        // // Можно добавить дополнительную проверку данных
+        // if (document.getElementById('editor').innerText.trim().length < 10) {
+        //     alert('Текст слишком короткий!');
+        //     e.preventDefault(); // Отменяем отправку
+        // }
+    });
+</script>
+{% endblock %}
