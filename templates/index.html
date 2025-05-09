@@ -25,8 +25,8 @@
     <a href="/vote/{{ chapter.id }}">
         <button class="vote-btn">👍</button>
     </a>
-    <a href="/continue_chapter/{{ chapter.id }}">
-        <button class="vote-btn">Продолжить</button>
+    <a href="/continue_chapter/{{ chapter.id }} {{ chapter.content }}">
+        <button>Продолжить</button>
     </a>
 </div>
 {% endfor %}

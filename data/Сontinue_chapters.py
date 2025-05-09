@@ -6,4 +6,3 @@ from data.db_session import SqlAlchemyBase
 class Сontinue_chapters(SqlAlchemyBase, UserMixin):
     __tablename__ = 'continue_chapters'
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    continue_id = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
