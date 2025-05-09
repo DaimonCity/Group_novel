@@ -8,7 +8,7 @@ from forms.login import LoginForm
 from data import db_session
 from data.users import User
 from data.chapters import Chapter
-from data.Сontinue_chapters import Сontinue_chapters
+# from data.Сontinue_chapters import Сontinue_chapters
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -32,14 +32,14 @@ def index():
 
 @app.route('/edit')
 def editor():
-    return render_template('docs2.html')
+    return render_template('docs.html')
 
 
 @app.route('/continue_chapter/<int:chapter_id>')
 def continue_chapter(chapter_id):
     db_sess = db_session.create_session()
     chapter = db_sess.query(Chapter).get(chapter_id)
-    print(db_sess.query(Сontinue_chapters).get().all())
+    # print(db_sess.query(Сontinue_chapters).get().all())
     add_chapter()
     chapter.continues_id.append()
 
@@ -56,7 +56,7 @@ def add_chapter():
     if content and author_id:
         new_chapter = Chapter(content=content, author_id=author_id)
         db_sess.add(new_chapter)
-        db_sess.query(Сontinue_chapters).add_column(sqlalchemy.Column(sqlalchemy.Integer))
+        # db_sess.query(Сontinue_chapters).add_column(sqlalchemy.Column(sqlalchemy.Integer))
         db_sess.commit()
 
     return redirect(url_for('index'))
@@ -154,6 +154,8 @@ def redact():
     # user = db_sess.query(User).get(id)
     form = RegisterForm()
     return render_template('redact.html', title=f"redact rofile", form=form)
+
+
 @app.route('/save_redact/<string:name><string:about>')
 @login_required
 def save_redact(name, about):
@@ -169,6 +171,5 @@ def save_redact(name, about):
 
 
 if __name__ == '__main__':
-    print(id)
     db_session.global_init("db/main.db")
     app.run(debug=True)
