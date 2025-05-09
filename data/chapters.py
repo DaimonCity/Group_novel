@@ -13,4 +13,5 @@ class Chapter(SqlAlchemyBase, UserMixin):
     votes = Column(Integer, default=0)
     date = Column(DateTime, default=datetime.utcnow)
     content = Column(Text, nullable=False)
+    title = Column(Text, nullable=False)
     next = Column(Text, default='')

@@ -51,10 +51,11 @@ def continue_chapter(chapter_id):
 def add_chapter():
     db_sess = db_session.create_session()
     content = request.form['content']
+    title = request.form['title']
     author_id = flask_login.current_user.id
 
-    if content and author_id:
-        new_chapter = Chapter(content=content, author_id=author_id)
+    if content and author_id and title:
+        new_chapter = Chapter(content=content, author_id=author_id, title=title)
         db_sess.add(new_chapter)
         # db_sess.query(Сontinue_chapters).add_column(sqlalchemy.Column(sqlalchemy.Integer))
         db_sess.commit()
@@ -70,18 +71,21 @@ def vote(chapter_id):
     db_sess.commit()
     return redirect(url_for('index'))
 
-
 @app.route('/publish_chapter', methods=['POST'])
 def publish_chapter():
-    raw_content = request.form['content']
+    content = request.form['content']
     author = request.form['author']
 
 
     # Очистка HTML (опционально)
-    clean_content = BeautifulSoup(raw_content, "html.parser").get_text()
+    clean_content = BeautifulSoup(content, "html.parser").get_text()
+    name = request.form['name']
+    clean_name = BeautifulSoup(name, "html.parser").get_text()
+
+    print(clean_content)
     if clean_content and author:
         db_sess = db_session.create_session()
-        new_chapter = Chapter(content=clean_content, author=author)
+        new_chapter = Chapter(content=clean_content, author=author, title=clean_name)
         db_sess.add(new_chapter)
         db_sess.commit()
         # Очищаем localStorage после успешной отправки
@@ -138,6 +142,8 @@ def login():
 def logout():
     logout_user()
     return redirect("/")
+
+
 @app.route('/profile/<int:id>')
 @login_required
 def profile(id):
@@ -168,6 +174,13 @@ def save_redact(name, about):
     #     db_sess.query(User).get(user_id).update({'about': about})
     db_sess.commit()
     # return redirect(url_for('profile', id=user_id))
+
+
+@app.route('/read/<int:chapter_id>')
+def read(chapter_id):
+    db_sess = db_session.create_session()
+    chapter = db_sess.query(Chapter).get(chapter_id)
+    return render_template('read_chapter.html', title=chapter.title, chapter=chapter)
 
 
 if __name__ == '__main__':

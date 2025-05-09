@@ -44,8 +44,12 @@
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-light bg-light">
-        <a class="navbar-brand" href="#">Novelstation/Storystation</a>
+    <nav class="navbar navbar-light bg-light"">
+        <a class="navbar-brand" href="/">Novelstation/Storystation</a>
+            <form action="/edit">
+                <button  style="font-size: 30px" type="text" required>🖋</button>
+            </form>
+
         {% if current_user.is_authenticated %}
             <a class="navbar-brand" href="/profile/{{ current_user.id }}" >{{ current_user.name }}</a>
         {% else %}

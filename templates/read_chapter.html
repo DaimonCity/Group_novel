@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="editorSheet", style="min-height: 10px">
+        <h2 style="text-after-overflow: hidden; overflow: hidden">{{ chapter.title }}</h2>
+        <p style="text-after-overflow: hidden; overflow: hidden">{{ chapter.content }}</p>
+        <small>Автор: {{ chapter.author }} | Дата: {{ chapter.date.strftime('%d.%m.%Y') }} | Голоса: {{ chapter.votes }}</small>
+    </div>
+    <a href="/vote/{{ chapter.id }}">
+        <button class="vote-btn">👍</button>
+    </a>
+    <form action="/">
+        <button>назад</button>
+    </form>
+{% endblock %}

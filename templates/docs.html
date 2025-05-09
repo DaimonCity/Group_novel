@@ -5,6 +5,7 @@
 
 <form id="chapterForm" action="/add_chapter" method="POST">
     <!-- Скрытое поле для текста -->
+    <input id="title" name="title">
     <input type="hidden" id="chapterContent" name="content">
     <br>
 
@@ -28,6 +29,7 @@
     // Автосохранение в localStorage
     if (localStorage.getItem('text_in_editor') !== null) {
         document.getElementById('editor').innerHTML = localStorage.getItem('text_in_editor');
+
     }
 
     document.addEventListener('keydown', function (e) {
