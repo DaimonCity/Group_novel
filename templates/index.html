@@ -5,11 +5,11 @@
 <h1>Все главы:</h1>
 {% for chapter in chapters %}
     <a href="/read/{{ chapter.id }}">
-        <button class="editorSheet" style='border-radius: 10px; min-height: 10vw; max-height: 25vw'>
+        <button class="editorSheet" style='border-radius: 10px; min-height: 10vw; max-height: 25vw; overflow-y:hidden'>
             <form action="/read">
+                <small>Автор: {{ chapter.author }} | Дата: {{ chapter.date.strftime('%d.%m.%Y') }} | Голоса: {{ chapter.votes }}</small>
                 <h2 style="text-after-overflow: hidden; line-height: 28px; overflow: hidden">{{ chapter.title }}</h2>
                 <p style="text-after-overflow: hidden; line-height: 28px; overflow: hidden">{{ chapter.content }}</p>
-                <small>Автор: {{ chapter.author }} | Дата: {{ chapter.date.strftime('%d.%m.%Y') }} | Голоса: {{ chapter.votes }}</small>
             </form>
         </button>
     </a>
