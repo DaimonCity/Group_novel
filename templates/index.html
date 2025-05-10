@@ -1,26 +1,30 @@
 {% extends "base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="../static/base.css">
+{% endblock%}
+
 {% block content %}
 <br>
 <h1>Все главы:</h1>
 {% for chapter in chapters %}
-    <a href="/read/{{ chapter.id }}">
-        <button class="editorSheet" style='border-radius: 10px; min-height: 10vw; max-height: 25vw'>
-            <form action="/read">
-                <h2 style="text-after-overflow: hidden; line-height: 28px; overflow: hidden">{{ chapter.title|safe }}</h2>
-                <div style="text-after-overflow: hidden; line-height: 28px; overflow: hidden; white-space: pre-wrap">{{
+<a href="/read/{{ chapter.id }}">
+    <button class="editorSheet" style='border-radius: 10px; min-height: 10vw; max-height: 25vw'>
+        <form action="/read">
+            <h2 style="text-after-overflow: hidden; line-height: 28px; overflow: hidden">{{ chapter.title|safe }}</h2>
+            <div style="text-after-overflow: hidden; line-height: 28px; overflow: hidden; white-space: pre-wrap">{{
                 chapter.content|safe}}
-                </div>
-                <small>Автор: {{ chapter.author }} | Дата: {{ chapter.date.strftime('%d.%m.%Y') }} | Голоса: {{ chapter.votes
-                    }}</small>
-            </form>
-        </button>
-    </a>
-    <a href="/vote/{{ chapter.id }}{{index}}">
-        <button class="vote-btn">👍</button>
-    </a>
-    <br>
-    <br>
+            </div>
+            <small>Автор: {{ chapter.author }} | Дата: {{ chapter.date.strftime('%d.%m.%Y') }} | Голоса: {{ chapter.votes
+                }}</small>
+        </form>
+    </button>
+</a>
+<a href="/vote/{{ chapter.id }}{{index}}">
+    <button class="vote-btn">👍</button>
+</a>
+<br>
+<br>
 {% endfor %}
 {% endblock %}
 

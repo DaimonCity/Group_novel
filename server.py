@@ -196,7 +196,7 @@ def personal(id):
 def make_project(projects_id, id):
     db_sess = db_session.create_session()
     project = db_sess.query(Project)
-    user = db_sess.query(User).get(id)
+    user = flask_login.current_user.id
 
     project.id = projects_id
     project.author_id = user.id
