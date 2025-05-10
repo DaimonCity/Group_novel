@@ -1,1 +1,1 @@
-from . import users, info_chapters
+from . import users, info_chapters, projects

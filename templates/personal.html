@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet"
+          href="../static/personal.css">
+</head>
+
+<body>
+
+<h1>Привет, {{current_user.name }}!</h1>
+
+<div>
+    <form action="/make_project/<int:{ {projects.id} }">
+        <button class="floating-button">Создать проект</button>
+    </form>
+</div>
+<div>
+    {% if projects == 0 %}
+    <div class="text-no-project">У вас пока нет проектов..</div>
+    {% else %}
+    <div> {% for id in projects.author_id %}
+        {% if id == current_user.id %}
+        <div>
+            <button class="button-project"><a href="/edit/<int:{ {projects.id} }>"></a> Проект {{projects.title}}
+            </button>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>

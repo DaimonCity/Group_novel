@@ -4,14 +4,13 @@ from data.db_session import SqlAlchemyBase
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, Text
 
 
-class Chapter(SqlAlchemyBase, UserMixin):
-    __tablename__ = 'chapters'
+class Project(SqlAlchemyBase, UserMixin):
+    __tablename__ = 'projects'
 
     id = Column(Integer, primary_key=True)
     author_id = Column(Integer, ForeignKey("users.id"))
-    state = Column(Integer, default=0)  # 0-первая глава 1-продолжениеб 2-концовка
+    state = Column(Integer, default=0)  # 0-Private 1-Shown 2-Shown + Edit
     votes = Column(Integer, default=0)
     date = Column(DateTime, default=datetime.utcnow)
-    content = Column(Text, nullable=False)
     title = Column(Text, nullable=False)
-    next = Column(Text, default='')
+    chapter_id = Column(Text, ForeignKey("chapters.id"))

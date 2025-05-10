@@ -1,3 +1,5 @@
+import logging
+import html
 import flask_login
 import sqlalchemy
 from flask import Flask, render_template, request, redirect, url_for
@@ -8,6 +10,8 @@ from forms.login import LoginForm
 from data import db_session
 from data.users import User
 from data.chapters import Chapter
+from data.projects import Project
+
 # from data.Сontinue_chapters import Сontinue_chapters
 
 app = Flask(__name__)
@@ -71,21 +75,16 @@ def vote(chapter_id):
     db_sess.commit()
     return redirect(url_for('index'))
 
+
 @app.route('/publish_chapter', methods=['POST'])
 def publish_chapter():
     content = request.form['content']
-    author = request.form['author']
-
-
-    # Очистка HTML (опционально)
-    clean_content = BeautifulSoup(content, "html.parser").get_text()
     name = request.form['name']
-    clean_name = BeautifulSoup(name, "html.parser").get_text()
+    author_id = flask_login.current_user.id
 
-    print(clean_content)
-    if clean_content and author:
+    if content and author_id:
         db_sess = db_session.create_session()
-        new_chapter = Chapter(content=clean_content, author=author, title=clean_name)
+        new_chapter = Chapter(content=content, author_id=author_id, title=name)
         db_sess.add(new_chapter)
         db_sess.commit()
         # Очищаем localStorage после успешной отправки
@@ -152,7 +151,6 @@ def profile(id):
     return render_template('profile.html', user=user, title=f"{user.name}'s Profile")
 
 
-
 @app.route('/redact')
 @login_required
 def redact():
@@ -181,6 +179,29 @@ def read(chapter_id):
     db_sess = db_session.create_session()
     chapter = db_sess.query(Chapter).get(chapter_id)
     return render_template('read_chapter.html', title=chapter.title, chapter=chapter)
+
+
+@app.route('/personal/<int:id>')
+@login_required
+def personal(id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).get(id)
+    try:
+        projects = [proj for proj in db_sess.query(Project).get({"author_id": id}).all()]
+        return render_template('personal.html', current_user=user, projects=projects)
+    except Exception as e:
+        return render_template('personal.html', current_user=user, projects=0)
+
+
+@app.route("/make_project/<int:projects_id>%<int:id>")
+@login_required
+def make_project(projects_id, id):
+    db_sess = db_session.create_session()
+    project = db_sess.query(Project)
+    user = db_sess.query(User).get(id)
+
+    project.id = projects_id
+    project.author_id = user.id
 
 
 if __name__ == '__main__':

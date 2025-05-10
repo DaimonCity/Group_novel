@@ -2,8 +2,8 @@
 
 {% block content %}
     <div class="editorSheet", style="min-height: 10px">
-        <h2 style="text-after-overflow: hidden; overflow: hidden">{{ chapter.title }}</h2>
-        <p style="text-after-overflow: hidden; overflow: hidden">{{ chapter.content }}</p>
+        <h2 style="text-after-overflow: hidden; overflow: hidden">{{ chapter.title|safe }}</h2>
+        <div style="text-after-overflow: hidden; overflow: hidden; white-space: pre-wrap">{{ chapter.content|safe }}</div>
         <small>Автор: {{ chapter.author }} | Дата: {{ chapter.date.strftime('%d.%m.%Y') }} | Голоса: {{ chapter.votes }}</small>
     </div>
     <a href="/vote/{{ chapter.id }}">
