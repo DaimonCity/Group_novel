@@ -1,5 +1,3 @@
-import logging
-import html
 import flask_login
 import sqlalchemy
 from flask import Flask, render_template, request, redirect, url_for

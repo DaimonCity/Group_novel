@@ -24,28 +24,28 @@
         <button>назад</button>
     </form>
 </form>
+    <script>
+        // Автосохранение в localStorage
+        if (localStorage.getItem('text_in_editor') !== null) {
+            document.getElementById('editor').innerHTML = localStorage.getItem('text_in_editor');
 
-<script>
-    // Автосохранение в localStorage
-    if (localStorage.getItem('text_in_editor') !== null) {
-        document.getElementById('editor').innerHTML = localStorage.getItem('text_in_editor');
+        }
 
-    }
+        document.addEventListener('keydown', function (e) {
+            localStorage.setItem('text_in_editor', document.getElementById('editor').innerHTML);
+        });
 
-    document.addEventListener('keydown', function (e) {
-        localStorage.setItem('text_in_editor', document.getElementById('editor').innerHTML);
-    });
+        // Обработка отправки формы
+        document.getElementById('chapterForm').addEventListener('submit', function (e) {
+            // Копируем содержимое редактора в скрытое поле
+            document.getElementById('chapterContent').value = document.getElementById('editor').innerHTML;
 
-    // Обработка отправки формы
-    document.getElementById('chapterForm').addEventListener('submit', function (e) {
-        // Копируем содержимое редактора в скрытое поле
-        document.getElementById('chapterContent').value = document.getElementById('editor').innerHTML;
-
-        // // Можно добавить дополнительную проверку данных
-        // if (document.getElementById('editor').innerText.trim().length < 10) {
-        //     alert('Текст слишком короткий!');
-        //     e.preventDefault(); // Отменяем отправку
-        // }
-    });
-</script>
+            // // Можно добавить дополнительную проверку данных
+            // if (document.getElementById('editor').innerText.trim().length < 10) {
+            //     alert('Текст слишком короткий!');
+            //     e.preventDefault(); // Отменяем отправку
+            // }
+        });
+    </script>
 {% endblock %}
+
