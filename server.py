@@ -8,7 +8,6 @@ from forms.login import LoginForm
 from data import db_session
 from data.users import User
 from data.chapters import Chapter
-# from data.Сontinue_chapters import Сontinue_chapters
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
