@@ -186,20 +186,38 @@ def personal(id):
     user = db_sess.query(User).get(id)
     try:
         projects = [proj for proj in db_sess.query(Project).get({"author_id": id}).all()]
-        return render_template('personal.html', current_user=user, projects=projects)
+        return render_template('personal.html', user=user, projects=projects)
     except Exception as e:
-        return render_template('personal.html', current_user=user, projects=0)
+        return render_template('personal.html', user=user, projects=0)
 
 
-@app.route("/make_project/<int:projects_id>%<int:id>")
+@app.route("/make_project", methods=['POST'])
 @login_required
-def make_project(projects_id, id):
-    db_sess = db_session.create_session()
-    project = db_sess.query(Project)
-    user = flask_login.current_user.id
+def make_project():
+    # db_sess = db_session.create_session()
+    # project = db_sess.query(Project)
+    # user = flask_login.current_user.id
 
-    project.id = projects_id
-    project.author_id = user.id
+    # project.id = projects_id
+    # project.author_id = user.id
+
+    db_sess = db_session.create_session()
+    title = request.form['title']
+    if title:
+        new_chapter = Chapter(author_id=flask_login.current_user.id, title=title, content='')
+        db_sess.add(new_chapter)
+        new_project = Project(author_id=flask_login.current_user.id, title=title, id=new_chapter.id)
+
+
+        # flask_login.current_user.chapters = new_chapter.id как- то так но чтобы работало
+        # db_sess.add(new_project)
+        # db_sess.commit()
+
+    return redirect(url_for('personal'))
+
+
+    print(title, flask_login.current_user.id)
+    return redirect('/')
 
 
 if __name__ == '__main__':

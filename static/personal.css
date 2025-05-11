@@ -36,3 +36,17 @@ h1 {
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
+.form-no-project {
+  display: none;
+  color: #5c5130;
+  font-weight: bold;
+  text-align: center;
+  font-size: 24px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #ffb50c;
+
+}

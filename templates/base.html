@@ -17,7 +17,7 @@
 
 
         {% if current_user.is_authenticated %}
-        <form action="/edit">
+        <form action="/personal/{{ current_user.id }}">
             <button style="font-size: 30px" type="text" required>🖋</button>
         </form>
         <a class="navbar-brand" href="/profile/{{ current_user.id }}">{{ current_user.name }}</a>
