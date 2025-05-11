@@ -165,7 +165,7 @@ def save_redact(name, about):
     # user_id = flask_login.current_user.id
     print(name, about, '!!!!!!')
     # if name:
-    #     db_sess.query(User).get(user_id).update({'name': name})
+    #     db_sess.query(`User`).get(user_id).update({'name': name})
     # if about:
     #     db_sess.query(User).get(user_id).update({'about': about})
     db_sess.commit()
@@ -184,22 +184,19 @@ def read(chapter_id):
 def personal(id):
     db_sess = db_session.create_session()
     user = db_sess.query(User).get(id)
-    try:
-        projects = [proj for proj in db_sess.query(Project).get({"author_id": id}).all()]
-        return render_template('personal.html', user=user, projects=projects)
-    except Exception as e:
+    projects = [proj for proj in db_sess.query(Project).all()]
+    if len(projects) == 0:
         return render_template('personal.html', user=user, projects=0)
+    return render_template('personal.html', user=user, projects=projects)
+    # except Exception as e:
+    #     return render_template('personal.html', user=user, projects=0)
 
 
 @app.route("/make_project", methods=['POST'])
 @login_required
 def make_project():
-    # db_sess = db_session.create_session()
-    # project = db_sess.query(Project)
-    # user = flask_login.current_user.id
-
-    # project.id = projects_id
-    # project.author_id = user.id
+    db_sess = db_session.create_session()
+    user = flask_login.current_user
 
     db_sess = db_session.create_session()
     title = request.form['title']
@@ -207,14 +204,9 @@ def make_project():
         new_chapter = Chapter(author_id=flask_login.current_user.id, title=title, content='')
         db_sess.add(new_chapter)
         new_project = Project(author_id=flask_login.current_user.id, title=title, id=new_chapter.id)
-
-
-        # flask_login.current_user.chapters = new_chapter.id как- то так но чтобы работало
-        # db_sess.add(new_project)
-        # db_sess.commit()
-
-    return redirect(url_for('personal'))
-
+        db_sess.add(new_project)
+        db_sess.commit()
+        return redirect(url_for('personal', id=user.id))
 
     print(title, flask_login.current_user.id)
     return redirect('/')

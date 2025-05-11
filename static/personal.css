@@ -1,52 +1,68 @@
 .floating-button {
-  position: fixed;  /* Фиксированное позиционирование относительно окна браузера */
-  bottom: 50px;     /* Отступ от нижнего края */
-  right: 50px;      /* Отступ от правого края */
-  width: 80px;      /* Ширина кнопки */
-  height: 80px;     /* Высота кнопки */
-  border-radius: 50%; /* Круглая форма */
-  background-color: #af934c; /* Цвет фона */
-  color: #ede0c4;     /* Цвет текста */
-  border: none;     /* Убираем границу */
-  cursor: pointer;  /* Курсор в виде указателя */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 1.5); /* Тень для красоты */
+    position: fixed; /* Фиксированное позиционирование относительно окна браузера */
+    bottom: 50px; /* Отступ от нижнего края */
+    right: 50px; /* Отступ от правого края */
+    width: 80px; /* Ширина кнопки */
+    height: 80px; /* Высота кнопки */
+    border-radius: 50%; /* Круглая форма */
+    background-color: #af934c; /* Цвет фона */
+    color: #ede0c4; /* Цвет текста */
+    border: none; /* Убираем границу */
+    cursor: pointer; /* Курсор в виде указателя */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 1.5); /* Тень для красоты */
 }
 
 .floating-button:hover {
-  background-color: #506cb3; /* Изменение цвета при наведении */
-  color: #121f3b;
+    background-color: #506cb3; /* Изменение цвета при наведении */
+    color: #121f3b;
+    border: none;
 }
 
 body {
-  background-color: #f3d8a0;
+    background-color: #f3d8a0;
 }
 
 h1 {
-  text-align: center;
-  color: #3e3825;
+    text-align: center;
+    color: #3e3825;
 }
 
 .text-no-project {
-  color: #5c5130;
-  font-weight: bold;
-  text-align: center;
-  font-size: 48px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+    color: #5c5130;
+    font-weight: bold;
+    text-align: center;
+    font-size: 48px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
-.form-no-project {
-  display: none;
-  color: #5c5130;
-  font-weight: bold;
-  text-align: center;
-  font-size: 24px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #ffb50c;
+.form-project {
+    color: #5c5130;
+    font-weight: bold;
+    text-align: center;
+    font-size: 24px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ffb50c;
 
+}
+
+.make-project-form {
+    display: none;
+    color: #5c5130;
+    font-weight: bold;
+    text-align: center;
+    font-size: 24px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vh;
+    border: 1px #121212 solid;
+    z-index: 3;
+    background-color: #ffb50c;
 }

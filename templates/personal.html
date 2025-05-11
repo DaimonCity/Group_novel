@@ -10,14 +10,14 @@
 
     {% if user.id == current_user.id %}
         <h1>Привет, {{current_user.name }}!</h1>
-
-        <form class="form-no-project" action="/make_project" method="POST" id="projectForm" style='z-index: 3'>
+        <div class="make-project">
+        <form class="make-project-form" action="/make_project" method="POST" id="projectForm">
                 <label><b>Новый проект</b></label><br>
                 <label for="title"><input type="text" id="title" name="title" placeholder="Название" required></label>
                 <button name="project" class="btn" onclick="closeForm()" required>Сохранить</button>
                 <button type="button" class="btn cancel" onclick="closeForm()">Отмена</button><br>
         </form>
-
+        </div>
         <script>
         function openForm() {
           document.getElementById("projectForm").style.display = "block";
@@ -34,20 +34,21 @@
         </div>
 
     {% endif %}
+<div>
+    {% if projects == 0 %}
+    <div class="text-no-project">У вас пока нет проектов..</div>
+    {% else %}
     <div>
-        {% if projects == 0 %}
-            <div class="text-no-project">У вас пока нет проектов..</div>
-        {% else %}
-            <div>
-                {% for id in projects.author_id %}
-                    {% if id == current_user.id %}
-                        <div class="form-no-project">
-                            <button class="button-project"><a href="/edit/<int:{ {projects.id} }>"></a> Проект {{projects.title}}
-                            </button>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-        </div>
-        {% endif %}
+        {% for project in projects %}
+            {% if project.author_id == current_user.id %}
+            <div class="form-project">
+                <a href="/edit/<int:{ {projects.id} }>">
+                <button class="button-project">{{project.title}}</button>
+                 </a>
+            </div>
+            {% endif %}
+        {% endfor %}
     </div>
+        {% endif %}
+</div>
 {% endblock %}
