@@ -3,12 +3,10 @@
 {% block content %}
 <h1>Текстовый редактор с автосохранением</h1>
 
-<form id="chapterForm" action="/add_chapter" method="POST">
+<form id="chapterForm" action="/add_chapter/{{ chapter_id }}" method="POST">
     <!-- Скрытое поле для текста -->
-    <label for="title"><input type="text" id="title" name="title"></label>
     <label><input type="hidden" id="chapterContent" name="content"></label>
     <br>
-
     <!-- Редактор -->
     <div id="editor" contenteditable="true" class="editorSheet"></div>
 
