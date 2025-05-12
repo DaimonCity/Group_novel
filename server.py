@@ -34,8 +34,10 @@ def index():
 # @app.route('/vote/<int:chapter_id>')
 # def vote(chapter_id):
 @app.route('/edit/<int:chapter_id>')
-def editor(chapter_id):
-    return render_template('docs.html', chapter_id=chapter_id)
+def edit(chapter_id):
+    db_sess = db_session.create_session()
+    chapter_content = db_sess.query(Chapter).get(chapter_id).content
+    return render_template('docs.html', chapter_id=chapter_id, chapter_content=chapter_content)
 
 
 @app.route('/continue_chapter/<int:chapter_id>')
@@ -54,9 +56,11 @@ def continue_chapter(chapter_id):
 def add_chapter(chapter_id):
     db_sess = db_session.create_session()
     content = request.form['content']
+    print(content)
     author_id = flask_login.current_user.id
 
     if content and author_id:
+        print(content)
         db_sess.query(Chapter).get(chapter_id).content = content
         # db_sess.query(Сontinue_chapters).add_column(sqlalchemy.Column(sqlalchemy.Integer))
         db_sess.commit()

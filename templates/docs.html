@@ -8,7 +8,14 @@
     <label><input type="hidden" id="chapterContent" name="content"></label>
     <br>
     <!-- Редактор -->
-    <div id="editor" contenteditable="true" class="editorSheet"></div>
+    <div id="editor" contenteditable="true" class="editorSheet">{{ chapter_content }}</div>
+
+
+<!--    <label><input  type="hidden" id="chapterContent" name="content"></label>-->
+<!--    <br>-->
+<!--    &lt;!&ndash; Редактор &ndash;&gt;-->
+<!--    <div id="editor" contenteditable="true" class="editorSheet"></div>-->
+
 
     <!-- Поля формы -->
     <br>
@@ -19,31 +26,36 @@
         <a class="btn btn-success" href="/login">Войти</a>
     {% endif %}
     <form action="/">
-        <button>назад</button>
+        <button onclick="saveLockal()">назад</button>
+        <script>
+            // Автосохранение в localStorage
+             function saveLockal()
+                if (localStorage.getItem('text_in_editor') !== null) {
+                    document.getElementById('editor').innerHTML = localStorage.getItem('text_in_editor');
+
+                }
+
+                document.addEventListener('keydown', function (e) {
+                    localStorage.setItem('text_in_editor', document.getElementById('editor').innerHTML);
+                });
+        </script>
     </form>
 </form>
-    <script>
-        // Автосохранение в localStorage
-        if (localStorage.getItem('text_in_editor') !== null) {
-            document.getElementById('editor').innerHTML = localStorage.getItem('text_in_editor');
+<script>
 
-        }
 
-        document.addEventListener('keydown', function (e) {
-            localStorage.setItem('text_in_editor', document.getElementById('editor').innerHTML);
-        });
+    // Обработка отправки формы
+    document.getElementById('chapterForm').addEventListener('submit', function (e) {
+        // Копируем содержимое редактора в скрытое поле
+        document.getElementById('chapterContent').value = document.getElementById('editor').innerHTML;
 
-        // Обработка отправки формы
-        document.getElementById('chapterForm').addEventListener('submit', function (e) {
-            // Копируем содержимое редактора в скрытое поле
-            document.getElementById('chapterContent').value = document.getElementById('editor').innerHTML;
+        // // Можно добавить дополнительную проверку данных
+        // if (document.getElementById('editor').innerText.trim().length < 10) {
+        //     alert('Текст слишком короткий!');
+        //     e.preventDefault(); // Отменяем отправку
+        // }
+    });
+</script>
 
-            // // Можно добавить дополнительную проверку данных
-            // if (document.getElementById('editor').innerText.trim().length < 10) {
-            //     alert('Текст слишком короткий!');
-            //     e.preventDefault(); // Отменяем отправку
-            // }
-        });
-    </script>
 {% endblock %}
 
