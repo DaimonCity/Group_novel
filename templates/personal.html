@@ -8,7 +8,7 @@
 {% endblock %}
 {% block content %}
 
-    {% if user.id == current_user.id %}
+    {% if user_id == current_user.id %}
         <h1>Привет, {{current_user.name }}!</h1>
         <div class="make-project">
         <form class="make-project-form" action="/make_project" method="POST" id="projectForm">

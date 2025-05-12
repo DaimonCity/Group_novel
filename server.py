@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from flask_login import login_user, login_required, logout_user, UserMixin, LoginManager
 from forms.user import RegisterForm
 from forms.login import LoginForm
-from data import db_session
+from data import db_session, chapters
 from data.users import User
 from data.chapters import Chapter
 from data.projects import Project
@@ -31,10 +31,11 @@ def index():
     chapters = [char for char in db_sess.query(Chapter).all() if char.state == 0]
     return render_template('index.html', chapters=chapters)
 
-
-@app.route('/edit')
-def editor():
-    return render_template('docs.html')
+# @app.route('/vote/<int:chapter_id>')
+# def vote(chapter_id):
+@app.route('/edit/<int:chapter_id>')
+def editor(chapter_id):
+    return render_template('docs.html', chapter_id=chapter_id)
 
 
 @app.route('/continue_chapter/<int:chapter_id>')
@@ -49,16 +50,14 @@ def continue_chapter(chapter_id):
     return redirect(url_for('index'))
 
 
-@app.route('/add_chapter', methods=['POST'])
-def add_chapter():
+@app.route('/add_chapter/<int:chapter_id>', methods=['POST'])
+def add_chapter(chapter_id):
     db_sess = db_session.create_session()
     content = request.form['content']
-    title = request.form['title']
     author_id = flask_login.current_user.id
 
-    if content and author_id and title:
-        new_chapter = Chapter(content=content, author_id=author_id, title=title)
-        db_sess.add(new_chapter)
+    if content and author_id:
+        db_sess.query(Chapter).get(chapter_id).content = content
         # db_sess.query(Сontinue_chapters).add_column(sqlalchemy.Column(sqlalchemy.Integer))
         db_sess.commit()
 
@@ -179,15 +178,14 @@ def read(chapter_id):
     return render_template('read_chapter.html', title=chapter.title, chapter=chapter)
 
 
-@app.route('/personal/<int:id>')
+@app.route('/personal/<int:user_id>')
 @login_required
-def personal(id):
+def personal(user_id):
     db_sess = db_session.create_session()
-    user = db_sess.query(User).get(id)
     projects = [proj for proj in db_sess.query(Project).all()]
     if len(projects) == 0:
-        return render_template('personal.html', user=user, projects=0)
-    return render_template('personal.html', user=user, projects=projects)
+        return render_template('personal.html', user_id=user_id, projects=0)
+    return render_template('personal.html', user_id=user_id, projects=projects)
     # except Exception as e:
     #     return render_template('personal.html', user=user, projects=0)
 
@@ -195,18 +193,17 @@ def personal(id):
 @app.route("/make_project", methods=['POST'])
 @login_required
 def make_project():
-    db_sess = db_session.create_session()
-    user = flask_login.current_user
-
+    curent_user_id = flask_login.current_user.id
     db_sess = db_session.create_session()
     title = request.form['title']
     if title:
-        new_chapter = Chapter(author_id=flask_login.current_user.id, title=title, content='')
+        new_chapter = Chapter(author_id=curent_user_id, title=title, content='')
         db_sess.add(new_chapter)
-        new_project = Project(author_id=flask_login.current_user.id, title=title, id=new_chapter.id)
+        db_sess.commit()
+        new_project = Project(author_id=curent_user_id, title=title, chapter_id=new_chapter.id)
         db_sess.add(new_project)
         db_sess.commit()
-        return redirect(url_for('personal', id=user.id))
+        return redirect(url_for('personal', user_id=curent_user_id))
 
     print(title, flask_login.current_user.id)
     return redirect('/')
