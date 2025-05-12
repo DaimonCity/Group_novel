@@ -39,15 +39,28 @@
     <div class="text-no-project">У вас пока нет проектов..</div>
     {% else %}
     <div>
-        {% for project in projects %}
-            {% if project.author_id == current_user.id %}
-            <div class="form-project">
-                <a href="/edit/<int:{ {projects.id} }>">
-                <button class="button-project">{{project.title}}</button>
-                 </a>
-            </div>
-            {% endif %}
-        {% endfor %}
+        <table >
+             <thead>
+                 <tr>
+                 </tr>
+             </thead>
+             <tbody class="project-elem">
+
+                {% for project in projects %}
+                    {% if project.author_id == current_user.id %}
+                        <tr>
+                            <td>
+                                <div class="form-project">
+                                    <a href="/edit/<int:{ {projects.id} }>">
+                                        <button class="button-project">{{project.title}}</button>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+             </tbody>
+        </table>
     </div>
         {% endif %}
 </div>
