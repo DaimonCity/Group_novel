@@ -1,7 +1,7 @@
 from flask_login import UserMixin
 from datetime import datetime
 from data.db_session import SqlAlchemyBase
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Text
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Text, ARRAY
 
 
 class Chapter(SqlAlchemyBase, UserMixin):
@@ -14,5 +14,5 @@ class Chapter(SqlAlchemyBase, UserMixin):
     date = Column(DateTime, default=datetime.utcnow)
     content = Column(Text, nullable=False)
     title = Column(Text, nullable=False)
-    next = Column(Text, default='')
+    next = Column(ARRAY(Integer), nullable=False)
 

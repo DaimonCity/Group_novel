@@ -29,27 +29,24 @@ def load_user(user_id):
 def index():
     db_sess = db_session.create_session()
     chapters = [char for char in db_sess.query(Chapter).all() if char.state == 0]
-    return render_template('index.html', chapters=chapters)
+    return render_template('index.html', chapters=chapters, title='Лента')
 
-# @app.route('/vote/<int:chapter_id>')
-# def vote(chapter_id):
 @app.route('/edit/<int:chapter_id>')
 def edit(chapter_id):
     db_sess = db_session.create_session()
-    chapter_content = db_sess.query(Chapter).get(chapter_id).content
-    return render_template('docs.html', chapter_id=chapter_id, chapter_content=chapter_content)
+    chapter = db_sess.query(Chapter).get(chapter_id)
+    return render_template('docs.html', chapter=chapter)
 
 
 @app.route('/continue_chapter/<int:chapter_id>')
 def continue_chapter(chapter_id):
     db_sess = db_session.create_session()
     chapter = db_sess.query(Chapter).get(chapter_id)
-    # print(db_sess.query(Сontinue_chapters).get().all())
     add_chapter()
     chapter.continues_id.append()
 
     db_sess.commit()
-    return redirect(url_for('index'))
+    return render_template('index')
 
 
 @app.route('/add_chapter/<int:chapter_id>', methods=['POST'])
@@ -62,10 +59,9 @@ def add_chapter(chapter_id):
     if content and author_id:
         print(content)
         db_sess.query(Chapter).get(chapter_id).content = content
-        # db_sess.query(Сontinue_chapters).add_column(sqlalchemy.Column(sqlalchemy.Integer))
         db_sess.commit()
 
-    return redirect(url_for('index'))
+    return redirect(url_for('personal', user_id=author_id))
 
 
 @app.route('/vote/<int:chapter_id>')
@@ -89,7 +85,7 @@ def publish_chapter():
         db_sess.add(new_chapter)
         db_sess.commit()
         # Очищаем localStorage после успешной отправки
-        return redirect(url_for('editor'))
+        return redirect(url_for('edit'))
     return "Ошибка: текст или автор не указаны", 400
 
 
@@ -208,9 +204,9 @@ def make_project():
         db_sess.add(new_project)
         db_sess.commit()
         return redirect(url_for('personal', user_id=curent_user_id))
-
-    print(title, flask_login.current_user.id)
     return redirect('/')
+
+
 
 
 if __name__ == '__main__':

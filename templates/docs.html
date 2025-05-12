@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Текстовый редактор с автосохранением</h1>
+<h1>{{chapter.title}}</h1>
 
-<form id="chapterForm" action="/add_chapter/{{ chapter_id }}" method="POST">
+<form id="chapterForm" action="/add_chapter/{{ chapter.id }}" method="POST">
     <!-- Скрытое поле для текста -->
     <label><input type="hidden" id="chapterContent" name="content"></label>
     <br>
     <!-- Редактор -->
-    <div id="editor" contenteditable="true" class="editorSheet">{{ chapter_content }}</div>
+    <div id="editor" contenteditable="true" class="editorSheet">{{ chapter.content }}</div>
 
 
 <!--    <label><input  type="hidden" id="chapterContent" name="content"></label>-->
@@ -25,22 +25,21 @@
         <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
         <a class="btn btn-success" href="/login">Войти</a>
     {% endif %}
-    <form action="/">
-        <button onclick="saveLockal()">назад</button>
-        <script>
-            // Автосохранение в localStorage
-             function saveLockal()
-                if (localStorage.getItem('text_in_editor') !== null) {
-                    document.getElementById('editor').innerHTML = localStorage.getItem('text_in_editor');
-
-                }
-
-                document.addEventListener('keydown', function (e) {
-                    localStorage.setItem('text_in_editor', document.getElementById('editor').innerHTML);
-                });
-        </script>
     </form>
-</form>
+    <button onclick="history.back()">Отмена</button>
+<!--        <script>-->
+<!--            // Автосохранение в localStorage-->
+<!--             function saveLockal()-->
+<!--                if (localStorage.getItem('text_in_editor') !== null) {-->
+<!--                    document.getElementById('editor').innerHTML = localStorage.getItem('text_in_editor');-->
+
+<!--                }-->
+
+<!--                document.addEventListener('keydown', function (e) {-->
+<!--                    localStorage.setItem('text_in_editor', document.getElementById('editor').innerHTML);-->
+<!--                });-->
+<!--        </script>-->
+
 <script>
 
 
