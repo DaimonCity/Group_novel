@@ -8,7 +8,7 @@
     <label><input type="hidden" id="chapterContent" name="content"></label>
     <br>
     <!-- Редактор -->
-    <div id="editor" contenteditable="true" class="editorSheet">{{ chapter.content }}</div>
+    <div id="editor" contenteditable="true" class="editorSheet">{{ chapter.content|safe }}</div>
 
     <br>
     {% if current_user.is_authenticated %}

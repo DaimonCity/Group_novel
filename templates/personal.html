@@ -42,12 +42,12 @@
         <div class="projects">
         {% for project_group in projects %}
             <label class="projects-label">
-            {% for project in project_group %}
-                    <button onclick="window.location.href='/edit/{{ project.chapter_id }}'" style='border-radius: 2vw; height: 40vw; width: 20vw'>{{ project.title }}</button>
-            {% endfor %}
+                {% for project in project_group %}
+                        <button onclick="window.location.href='/edit/{{ project.chapter_id }}'" style='border-radius: 2vw; height: 40vw; width: 20vw'>{{ project.title }}</button>
+                {% endfor %}
             </label>
         {% endfor %}
-            </div>
+        </div>
     {% endif %}
 </div>
 {% endblock %}
