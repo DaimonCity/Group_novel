@@ -38,18 +38,6 @@
 <div>
     {% if projects == 0 %}
         <div class="text-no-project">У вас пока нет проектов..</div>
-<!--   для табличной сортировки {% elif 1 %}-->
-<!--        <div>-->
-<!--            {% for project in projects %}-->
-<!--                {% if project.author_id == current_user.id %}-->
-<!--                <div class="make-project">-->
-<!--                    <a href="/edit/{{ project.chapter_id }}">-->
-<!--                        <button class="button-project">{{project.title}}</button>-->
-<!--                    </a>-->
-<!--                </div>-->
-<!--                {% endif %}-->
-<!--            {% endfor %}-->
-<!--        </div>-->
     {% else %}
         <div>
         {% for project_group in projects %}

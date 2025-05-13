@@ -1,8 +1,6 @@
 import flask_login
-import sqlalchemy
 from flask import Flask, render_template, request, redirect, url_for
-from bs4 import BeautifulSoup
-from flask_login import login_user, login_required, logout_user, UserMixin, LoginManager
+from flask_login import login_user, login_required, logout_user, LoginManager
 from forms.user import RegisterForm
 from forms.login import LoginForm
 from data import db_session, chapters

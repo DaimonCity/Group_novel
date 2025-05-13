@@ -11,6 +11,8 @@
     cursor: pointer; /* Курсор в виде указателя */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 1.5); /* Тень для красоты */
     z-index: 100;
+    font-family: Arial, serif;
+    font-size: 16px;
 }
 
 .floating-button:hover {
@@ -68,6 +70,10 @@ h1 {
 
 table {
     border-collapse: separate;
-    border-spacing: 0px 50px;
+    border-spacing: 0 50px;
+    border: 1px #121212 solid;
 }
 
+main {
+    text-align: center;
+}
