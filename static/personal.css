@@ -1,7 +1,7 @@
 .floating-button {
     position: fixed; /* Фиксированное позиционирование относительно окна браузера */
     bottom: 50px; /* Отступ от нижнего края */
-    right: 50px; /* Отступ от правого края */
+    right: 10px; /* Отступ от правого края */
     width: 80px; /* Ширина кнопки */
     height: 80px; /* Высота кнопки */
     border-radius: 50%; /* Круглая форма */
@@ -10,6 +10,7 @@
     border: none; /* Убираем границу */
     cursor: pointer; /* Курсор в виде указателя */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 1.5); /* Тень для красоты */
+    z-index: 100;
 }
 
 .floating-button:hover {
