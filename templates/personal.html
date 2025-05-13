@@ -5,18 +5,19 @@
     <title>{{ title }}</title>
     <link rel="stylesheet"
           href="../static/personal.css">
+    <link rel="stylesheet" href="../static/base.css">
 {% endblock %}
 {% block content %}
 
     {% if user_id == current_user.id %}
         <h1>Привет, {{current_user.name }}!</h1>
         <div class="make-project">
-        <form class="make-project-form" action="/make_project" method="POST" id="projectForm">
-                <label><b>Новый проект</b></label><br>
-                <label for="title"><input type="text" id="title" name="title" placeholder="Название" required></label>
-                <button name="project" class="btn" onclick="closeForm()" required>Сохранить</button>
-                <button type="button" class="btn cancel" onclick="closeForm()">Отмена</button><br>
-        </form>
+            <form class="make-project-form" action="/make_project" method="POST" id="projectForm">
+                    <label><b>Новый проект</b></label><br>
+                    <label for="title"><input type="text" id="title" name="title" placeholder="Название" required></label>
+                    <button name="project" class="btn" onclick="closeForm()" required>Сохранить</button>
+                    <button type="button" class="btn cancel" onclick="closeForm()">Отмена</button><br>
+            </form>
         </div>
         <script>
         function openForm() {
@@ -38,17 +39,13 @@
     {% if projects == 0 %}
     <div class="text-no-project">У вас пока нет проектов..</div>
     {% else %}
-    <div>
-        {% for project in projects %}
-            {% if project.author_id == current_user.id %}
-            <div class="make-project">
-                <a href="/edit/{{ project.chapter_id }}">
-                    <button class="button-project">{{project.title}}</button>
-                </a>
-            </div>
-            {% endif %}
+        {% for project_group in projects %}
+            <label>
+            {% for project in project_group %}
+                    <button onclick="window.location.href='/edit/{{ project.chapter_id }}'" style='border-radius: 2vw; height: 40vw; width: 20vw'>{{ project.title }}</button>
+            {% endfor %}
+            </label>
         {% endfor %}
-    </div>
-        {% endif %}
+    {% endif %}
 </div>
 {% endblock %}

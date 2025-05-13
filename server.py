@@ -182,7 +182,9 @@ def read(chapter_id):
 @login_required
 def personal(user_id):
     db_sess = db_session.create_session()
-    projects = [proj for proj in db_sess.query(Project).all()]
+    projects = [proj for proj in db_sess.query(Project).filter(Project.author_id == user_id)]
+    projects = [projects[i:i + 3] for i in range(0, len(projects), 3)]
+    print(projects)
     if len(projects) == 0:
         return render_template('personal.html', user_id=user_id, projects=0)
     return render_template('personal.html', user_id=user_id, projects=projects)

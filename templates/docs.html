@@ -10,14 +10,6 @@
     <!-- Редактор -->
     <div id="editor" contenteditable="true" class="editorSheet">{{ chapter.content }}</div>
 
-
-<!--    <label><input  type="hidden" id="chapterContent" name="content"></label>-->
-<!--    <br>-->
-<!--    &lt;!&ndash; Редактор &ndash;&gt;-->
-<!--    <div id="editor" contenteditable="true" class="editorSheet"></div>-->
-
-
-    <!-- Поля формы -->
     <br>
     {% if current_user.is_authenticated %}
         <button type="text" name="author" required>Опубликовать</button>
