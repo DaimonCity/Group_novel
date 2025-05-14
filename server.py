@@ -206,7 +206,23 @@ def make_project():
         return redirect(url_for('personal', user_id=curent_user_id))
     return redirect('/')
 
-
+# @app.route("/open_table/<int:chapter_id>", methods=['POST'])
+# @login_required
+# def open_table(chapter_id):
+#     tree = chapter_tree(chapter_id)
+#     return redirect('/table', tree=tree)
+#
+# def chapter_tree(chapter_id):
+#     tree = dict()
+#     db_sess = db_session.create_session()
+#     chapter = db_sess.query(Chapter).get(chapter_id)
+#     if chapter.next:
+#         for i in chapter.next:
+#             if tree[chapter_id]:
+#                 tree[chapter_id].append(chapter_tree(i))
+#             else:
+#                 tree[chapter_id] = [chapter_tree(i)]
+#     return tree
 
 
 if __name__ == '__main__':

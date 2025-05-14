@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block head %}
+{% endblock %}
+{% block content %}
+<!--   для табличной сортировки {% elif 1 %}-->
+<div>
+    {% for next_id in chapter.next %}
+        {% if project.author_id == current_user.id %}
+        <div class="make-project">
+<!--            <a href="/edit/{{ project.chapter_id }}">-->
+                <button class="button-project">{{project.title}}</button>
+<!--            </a>-->
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}
