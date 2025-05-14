@@ -15,21 +15,12 @@
             <form class="make-project-form" action="/make_project" method="POST" id="projectForm">
                     <label><b>Новый проект</b></label><br>
                     <label for="title"><input type="text" id="title" name="title" placeholder="Название" required></label>
-                    <button name="project" class="btn" onclick="closeForm()" required>Сохранить</button>
-                    <button type="button" class="btn cancel" onclick="closeForm()">Отмена</button><br>
+                    <label>
+                        <button name="project" class="btn" onclick="closeForm()" required>Сохранить</button>
+                        <button type="button" class="btn cancel" onclick="closeForm()">Отмена</button><br>
+                    </label>
             </form>
         </div>
-        <script>
-        function openForm() {
-          document.getElementById("projectForm").style.display = "block";
-        }
-
-        function closeForm() {
-          document.getElementById("projectForm").style.display = "none";
-        }
-        </script>
-
-
         <div>
             <button class="floating-button" onclick="openForm()">Создать проект</button>
         </div>
@@ -50,4 +41,13 @@
         </div>
     {% endif %}
 </div>
+<script>
+        function openForm() {
+          document.getElementById("projectForm").style.display = "block";
+        }
+
+        function closeForm() {
+          document.getElementById("projectForm").style.display = "none";
+        }
+        </script>
 {% endblock %}

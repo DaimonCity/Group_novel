@@ -10,8 +10,8 @@
 {% for chapter in chapters %}
     <a href="/read/{{ chapter.id }}">
         <button class="editorSheet" style='overflow: hidden; border-radius: 10px; min-height: 10vw; max-height: 20vw'>
+            <h2 style="margin-bottom: -10px">{{ chapter.title|safe }}</h2>
             <div style="overflow-wrap: anywhere">
-                <h2 style="margin-bottom: -10px">{{ chapter.title|safe }}</h2>
                 <small style="margin-top: -10px">Автор: {{ chapter.author|safe }} | Дата: {{ chapter.date.strftime('%d.%m.%Y') }} | Голоса: {{ chapter.votes|safe }}</small>
                 <p>{{ chapter.content[:250]|safe }}</p>
             </div>
