@@ -3,10 +3,13 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_login import login_user, login_required, logout_user, LoginManager
 from forms.user import RegisterForm
 from forms.login import LoginForm
-from data import db_session, chapters
+from data import db_session
 from data.users import User
 from data.chapters import Chapter
 from data.projects import Project
+import json
+
+from pprint import pprint
 
 # from data.Сontinue_chapters import Сontinue_chapters
 
@@ -206,25 +209,36 @@ def make_project():
         return redirect(url_for('personal', user_id=curent_user_id))
     return redirect('/')
 
-# @app.route("/open_table/<int:chapter_id>", methods=['POST'])
-# @login_required
-# def open_table(chapter_id):
-#     tree = chapter_tree(chapter_id)
-#     return redirect('/table', tree=tree)
-#
-# def chapter_tree(chapter_id):
-#     tree = dict()
-#     db_sess = db_session.create_session()
-#     chapter = db_sess.query(Chapter).get(chapter_id)
-#     if chapter.next:
-#         for i in chapter.next:
-#             if tree[chapter_id]:
-#                 tree[chapter_id].append(chapter_tree(i))
-#             else:
-#                 tree[chapter_id] = [chapter_tree(i)]
-#     return tree
+@app.route("/open_table/<int:chapter_id>", methods=['POST'])
+@login_required
+def open_table(chapter_id):
+    tree = chapter_tree(chapter_id)
+    return redirect('/table', tree=tree)
 
+def chapter_tree(chapter_id):
+    tree = dict()
+    tree[chapter_id] = []
+    db_sess = db_session.create_session()
+    chapter = db_sess.query(Chapter).get(chapter_id)
+    if chapter:
+        if chapter.next is not None:
+            for i in json.loads(chapter.next):
+                if chapter_id in tree:
+                    tree[chapter_id].append(chapter_tree(i))
+                else:
+                    tree[chapter_id] = [chapter_tree(i)]
+    return tree
+
+
+def test():
+    # db_sess = db_session.create_session()
+    # chapter = db_sess.query(Chapter).get(10)
+    # chapter.next = json.dumps([9, 8, 7])
+    # db_sess.commit()
+    pass
 
 if __name__ == '__main__':
     db_session.global_init("db/main.db")
+    test()
+    # pprint(chapter_tree(1))
     app.run(debug=True)

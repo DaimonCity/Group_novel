@@ -14,5 +14,5 @@ class Chapter(SqlAlchemyBase, UserMixin):
     date = Column(DateTime, default=datetime.utcnow)
     content = Column(Text, nullable=False)
     title = Column(Text, nullable=False)
-    next = Column(ARRAY(Integer), nullable=False)
+    next = Column(ARRAY(Integer), nullable=True, default=[])
 
