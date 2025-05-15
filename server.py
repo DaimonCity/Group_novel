@@ -54,11 +54,8 @@ def continue_chapter(chapter_id):
 def add_chapter(chapter_id):
     db_sess = db_session.create_session()
     content = request.form['content']
-    print(content)
     author_id = flask_login.current_user.id
-
     if content and author_id:
-        print(content)
         db_sess.query(Chapter).get(chapter_id).content = content
         db_sess.commit()
 
@@ -183,7 +180,6 @@ def personal(user_id):
     db_sess = db_session.create_session()
     projects = [proj for proj in db_sess.query(Project).filter(Project.author_id == user_id)]
     projects = [projects[i:i + 3] for i in range(0, len(projects), 3)]
-    print(projects)
     if len(projects) == 0:
         return render_template('personal.html', user_id=user_id, projects=0)
     return render_template('personal.html', user_id=user_id, projects=projects)
@@ -234,15 +230,16 @@ def chapter_tree(chapter_id):
     return tree
 
 
-def test():
-    db_sess = db_session.create_session()
-    chapter = db_sess.query(Chapter).get(1)
-    chapter.next = json.dumps([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-    db_sess.commit()
-    pass
+# def test():
+#     db_sess = db_session.create_session()
+#     for i in range(1, 9):
+#         print(i)
+#         chapter = db_sess.query(Chapter).get(i)
+#         chapter.next = json.dumps([i + 1])
+#         db_sess.commit()
 
 if __name__ == '__main__':
     db_session.global_init("db/main.db")
-    test()
+    # test()
     print(chapter_tree(1))
     app.run(debug=True)

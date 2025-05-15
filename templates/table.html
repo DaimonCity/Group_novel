@@ -79,8 +79,6 @@
 </head>
 <body>
     <div class="controls">
-        <button onclick="updateLayout('dagre')">Иерархический вид</button>
-        <button onclick="updateLayout('force')">Динамический вид</button>
         <button onclick="zoomFit()">Подогнать по размеру</button>
 
         <div class="slider-container">
@@ -95,6 +93,12 @@
             <span id="rightBiasValue">70%</span>
         </div>
 
+        <div class="slider-container">
+            <span class="slider-label">Сила отталкивания:</span>
+            <input type="range" id="repulsionSlider" min="50" max="1000" value="300" oninput="updateRepulsion()">
+            <span id="repulsionValue">300</span>
+        </div>
+
         <span id="root-info">Начальная глава: {{ tree_data.title }} (ID: {{ tree_data.id }})</span>
     </div>
     <div class="graph-container" id="graph-container"></div>
@@ -102,12 +106,12 @@
     <script>
         const graphData = {{ tree_data|tojson|safe }};
         const rootChapterId = graphData.id;
-        let currentLayout = 'force';
         let svg, g, zoom, defs;
         let nodes, links;
         let simulation;
         let nodeDistance = 150;
         let rightBias = 0.7;
+        let repulsionForce = -300;
         const nodeWidth = 150;
         const nodeHeight = 50;
 
@@ -128,12 +132,11 @@
 
             g = svg.append("g");
 
-            // Arrow marker definition with adjusted refX
             defs = svg.append("defs");
             defs.append("marker")
                 .attr("id", "arrowhead")
                 .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 10)  // Adjusted to stop at edge
+                .attr("refX", 10)
                 .attr("refY", 0)
                 .attr("markerWidth", 6)
                 .attr("markerHeight", 6)
@@ -143,12 +146,14 @@
                 .attr("class", "arrow");
 
             processGraphData();
-            updateLayout(currentLayout);
+            drawForceLayout();
 
             document.getElementById('distanceSlider').value = nodeDistance;
             document.getElementById('distanceValue').textContent = nodeDistance;
             document.getElementById('rightBiasSlider').value = rightBias * 100;
             document.getElementById('rightBiasValue').textContent = Math.round(rightBias * 100) + '%';
+            document.getElementById('repulsionSlider').value = -repulsionForce;
+            document.getElementById('repulsionValue').textContent = -repulsionForce;
         }
 
         function processGraphData() {
@@ -194,102 +199,23 @@
             processNode(graphData);
         }
 
-        function updateLayout(layoutType) {
-            currentLayout = layoutType;
-            g.selectAll(".node, .link").remove();
+        function getEdgePoint(node, targetX, targetY, width, height) {
+            const centerX = node.x;
+            const centerY = node.y;
+            const dx = targetX - centerX;
+            const dy = targetY - centerY;
+            const angle = Math.atan2(dy, dx);
+            const absAngle = Math.abs(angle);
 
-            if (layoutType === 'dagre') {
-                drawDagreLayout();
-            } else if (layoutType === 'force') {
-                drawForceLayout();
+            if (absAngle <= Math.PI/4) {
+                return { x: centerX + width/2, y: centerY };
+            } else if (absAngle >= 3*Math.PI/4) {
+                return { x: centerX - width/2, y: centerY };
+            } else if (angle > 0) {
+                return { x: centerX, y: centerY + height/2 };
+            } else {
+                return { x: centerX, y: centerY - height/2 };
             }
-        }
-
-        function drawDagreLayout() {
-            const dagreGraph = new dagre.graphlib.Graph()
-                .setGraph({
-                    rankdir: "LR",
-                    marginx: 20,
-                    marginy: 20,
-                    nodesep: nodeDistance * 0.3,
-                    edgesep: 20,
-                    ranksep: nodeDistance
-                })
-                .setDefaultEdgeLabel(() => ({}));
-
-            nodes.forEach(node => {
-                dagreGraph.setNode(node.id, {
-                    width: nodeWidth,
-                    height: nodeHeight,
-                    title: node.title,
-                    isRoot: node.isRoot
-                });
-            });
-
-            links.forEach(link => {
-                dagreGraph.setEdge(link.source, link.target);
-            });
-
-            dagre.layout(dagreGraph);
-
-            // Draw nodes
-            const nodeElements = g.selectAll(".node")
-                .data(nodes)
-                .enter().append("g")
-                .attr("class", d => `node ${d.isRoot ? 'start-node' : ''}`)
-                .attr("transform", d => {
-                    const node = dagreGraph.node(d.id);
-                    return `translate(${node.x - node.width / 2},${node.y - node.height / 2})`;
-                });
-
-            nodeElements.append("rect")
-                .attr("width", nodeWidth)
-                .attr("height", nodeHeight)
-                .on("click", d => {
-                    window.location.href = `/chapter/${d.id}`;
-                });
-
-            nodeElements.append("text")
-                .attr("x", nodeWidth / 2)
-                .attr("y", nodeHeight / 2)
-                .attr("dy", "0.35em")
-                .attr("text-anchor", "middle")
-                .text(d => d.title);
-
-            // Draw edges with properly oriented arrows
-            const linkElements = g.selectAll(".link")
-                .data(links)
-                .enter().append("path")
-                .attr("class", "link")
-                .attr("marker-end", "url(#arrowhead)")
-                .attr("d", d => {
-                    const sourceNode = dagreGraph.node(d.source);
-                    const targetNode = dagreGraph.node(d.target);
-
-                    // Calculate direction vector
-                    const dx = targetNode.x - sourceNode.x;
-                    const dy = targetNode.y - sourceNode.y;
-                    const length = Math.sqrt(dx * dx + dy * dy);
-                    const nx = dx / length;
-                    const ny = dy / length;
-
-                    // Calculate intersection points with rectangle edges
-                    const sourceX = sourceNode.x + (nx > 0 ? sourceNode.width/2 : -sourceNode.width/2);
-                    const sourceY = sourceNode.y + (ny > 0 ? sourceNode.height/2 : -sourceNode.height/2);
-
-                    const targetX = targetNode.x - (nx > 0 ? targetNode.width/2 : -targetNode.width/2);
-                    const targetY = targetNode.y - (ny > 0 ? targetNode.height/2 : -targetNode.height/2);
-
-                    // Create smooth curve for the path
-                    const controlX1 = sourceX + (targetX - sourceX) * 0.3;
-                    const controlY1 = sourceY;
-                    const controlX2 = targetX - (targetX - sourceX) * 0.3;
-                    const controlY2 = targetY;
-
-                    return `M${sourceX},${sourceY}C${controlX1},${controlY1} ${controlX2},${controlY2} ${targetX},${targetY}`;
-                });
-
-            zoomFit();
         }
 
         function drawForceLayout() {
@@ -305,19 +231,17 @@
 
             simulation = d3.forceSimulation(nodes)
                 .force("link", d3.forceLink(links).id(d => d.id).distance(nodeDistance))
-                .force("charge", d3.forceManyBody().strength(-nodeDistance))
+                .force("charge", d3.forceManyBody().strength(repulsionForce))
                 .force("rightBias", rightBiasForce)
                 .force("y", d3.forceY().y(d => d.isRoot ? svg.node().clientHeight / 3 : null).strength(d => d.isRoot ? 0.5 : 0.05))
                 .force("collision", d3.forceCollide().radius(60));
 
-            // Draw links with properly oriented arrows
             const linkElements = g.selectAll(".link")
                 .data(links)
                 .enter().append("path")
                 .attr("class", "link")
                 .attr("marker-end", "url(#arrowhead)");
 
-            // Draw nodes (сохраняем предыдущую реализацию)
             const nodeElements = g.selectAll(".node")
                 .data(nodes)
                 .enter().append("g")
@@ -348,33 +272,30 @@
                     const source = d.source;
                     const target = d.target;
 
-                    // Calculate direction vector
-                    const dx = target.x - source.x;
-                    const dy = target.y - source.y;
-                    const length = Math.sqrt(dx * dx + dy * dy);
-                    const nx = dx / length;
-                    const ny = dy / length;
+                    const sourcePoint = getEdgePoint(
+                        { x: source.x, y: source.y },
+                        target.x, target.y,
+                        nodeWidth, nodeHeight
+                    );
+                    const targetPoint = getEdgePoint(
+                        { x: target.x, y: target.y },
+                        source.x, source.y,
+                        nodeWidth, nodeHeight
+                    );
 
-                    // Calculate intersection points with rectangle edges
-                    const sourceX = source.x + (nx > 0 ? nodeWidth/2 : -nodeWidth/2);
-                    const sourceY = source.y + (ny > 0 ? nodeHeight/2 : -nodeHeight/2);
+                    const dx = targetPoint.x - sourcePoint.x;
+                    const dy = targetPoint.y - sourcePoint.y;
+                    const controlX1 = sourcePoint.x + dx * 0.3;
+                    const controlY1 = sourcePoint.y;
+                    const controlX2 = targetPoint.x - dx * 0.3;
+                    const controlY2 = targetPoint.y;
 
-                    const targetX = target.x - (nx > 0 ? nodeWidth/2 : -nodeWidth/2);
-                    const targetY = target.y - (ny > 0 ? nodeHeight/2 : -nodeHeight/2);
-
-                    // Create smooth curve for the path
-                    const controlX1 = sourceX + (targetX - sourceX) * 0.3;
-                    const controlY1 = sourceY;
-                    const controlX2 = targetX - (targetX - sourceX) * 0.3;
-                    const controlY2 = targetY;
-
-                    return `M${sourceX},${sourceY}C${controlX1},${controlY1} ${controlX2},${controlY2} ${targetX},${targetY}`;
+                    return `M${sourcePoint.x},${sourcePoint.y}C${controlX1},${controlY1} ${controlX2},${controlY2} ${targetPoint.x},${targetPoint.y}`;
                 });
 
                 nodeElements.attr("transform", d => `translate(${d.x - nodeWidth/2},${d.y - nodeHeight/2})`);
             });
 
-            // Fix root node position
             const rootNode = nodes.find(n => n.isRoot);
             if (rootNode) {
                 rootNode.fx = svg.node().clientWidth / 2;
@@ -388,28 +309,29 @@
             nodeDistance = parseInt(document.getElementById('distanceSlider').value);
             document.getElementById('distanceValue').textContent = nodeDistance;
 
-            if (currentLayout === 'force') {
-                simulation.force("link").distance(nodeDistance);
-                simulation.force("charge").strength(-nodeDistance);
-                simulation.alpha(0.3).restart();
-            } else if (currentLayout === 'dagre') {
-                drawDagreLayout();
-            }
+            simulation.force("link").distance(nodeDistance);
+            simulation.alpha(0.3).restart();
         }
 
         function updateRightBias() {
             rightBias = parseInt(document.getElementById('rightBiasSlider').value) / 100;
             document.getElementById('rightBiasValue').textContent = Math.round(rightBias * 100) + '%';
 
-            if (currentLayout === 'force') {
-                simulation.force("rightBias")
-                    .x(d => {
-                        const centerX = svg.node().clientWidth / 2;
-                        if (d.isRoot) return centerX;
-                        return centerX * (1 + rightBias);
-                    });
-                simulation.alpha(0.3).restart();
-            }
+            const centerX = svg.node().clientWidth / 2;
+            simulation.force("rightBias")
+                .x(d => {
+                    if (d.isRoot) return centerX;
+                    return centerX * (1 + rightBias);
+                });
+            simulation.alpha(0.3).restart();
+        }
+
+        function updateRepulsion() {
+            repulsionForce = -parseInt(document.getElementById('repulsionSlider').value);
+            document.getElementById('repulsionValue').textContent = -repulsionForce;
+
+            simulation.force("charge").strength(repulsionForce);
+            simulation.alpha(0.3).restart();
         }
 
         function zoomFit() {
@@ -459,11 +381,8 @@
             }
         }
 
-        // Load dagre library and initialize
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js';
-        script.onload = initializeGraph;
-        document.head.appendChild(script);
+        // Initialize graph on load
+        document.addEventListener("DOMContentLoaded", initializeGraph);
     </script>
 </body>
 </html>
