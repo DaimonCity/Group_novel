@@ -1,351 +1,459 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Chapter Tree with Side Connections</title>
+    <meta charset="UTF-8">
+    <title>Chapter Graph</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
+        }
+        .graph-container {
+            width: 100%;
+            height: 700px;
+            overflow: auto;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+        }
+        .node rect {
+            fill: #fff;
+            stroke: steelblue;
+            stroke-width: 2px;
+            rx: 5;
+            ry: 5;
+        }
+        .start-node rect {
+            fill: #ffeb3b;
+            stroke: #ff9800;
+            stroke-width: 3px;
+        }
+        .node text {
+            font: 12px sans-serif;
+        }
+        .link {
+            fill: none;
+            stroke: #999;
+            stroke-width: 1.5px;
+        }
+        .arrow {
+            fill: #999;
         }
         .controls {
-            margin-bottom: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
         }
-        .sort-btn {
+        button {
             padding: 8px 15px;
-            margin-right: 10px;
-            background-color: #2196F3;
+            background: #4CAF50;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            transition: background 0.3s;
         }
-        .tree-container {
-            position: relative;
-            width: 100%;
-            min-height: 300px;
-            overflow-x: auto;
+        button:hover {
+            background: #45a049;
         }
-        .tree {
-            display: flex;
-            position: relative;
-            min-height: 300px;
-            padding: 50px 0;
-        }
-        .tree-level {
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            position: relative;
-            min-width: 200px;
-            margin-right: 30px;
-        }
-        .chapter-node {
-            position: relative;
-            margin: 10px 0;
-            z-index: 2;
-        }
-        .chapter-btn {
-            padding: 8px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+        #root-info {
+            padding: 5px 10px;
+            background: #ffeb3b;
             border-radius: 4px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s;
-            position: relative;
-            z-index: 2;
-            min-width: 150px;
-            white-space: nowrap;
+            font-weight: bold;
         }
-        .chapter-btn:hover {
-            background-color: #45a049;
-            transform: scale(1.05);
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .chapter-btn.current {
-            background-color: #f44336;
-        }
-        .connectors {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
+        .slider-label {
+            min-width: 120px;
         }
     </style>
 </head>
 <body>
     <div class="controls">
-        <button class="sort-btn" onclick="sortTree('title')">Sort by Title</button>
-        <button class="sort-btn" onclick="sortTree('id')">Sort by ID</button>
+        <button onclick="updateLayout('dagre')">Иерархический вид</button>
+        <button onclick="updateLayout('force')">Динамический вид</button>
+        <button onclick="zoomFit()">Подогнать по размеру</button>
+
+        <div class="slider-container">
+            <span class="slider-label">Расстояние между узлами:</span>
+            <input type="range" id="distanceSlider" min="50" max="300" value="150" oninput="updateDistance()">
+            <span id="distanceValue">150</span>
+        </div>
+
+        <div class="slider-container">
+            <span class="slider-label">Смещение вправо:</span>
+            <input type="range" id="rightBiasSlider" min="0" max="100" value="70" oninput="updateRightBias()">
+            <span id="rightBiasValue">70%</span>
+        </div>
+
+        <span id="root-info">Начальная глава: {{ tree_data.title }} (ID: {{ tree_data.id }})</span>
     </div>
-    <div class="tree-container">
-        <div class="tree" id="tree"></div>
-        <svg class="connectors" id="connectors"></svg>
-    </div>
+    <div class="graph-container" id="graph-container"></div>
 
     <script>
-        let treeData = {{ tree_data|tojson|safe }};
-        let currentChapterId = null;
-        let nodePositions = {};
-        let renderedNodes = new Set();
+        const graphData = {{ tree_data|tojson|safe }};
+        const rootChapterId = graphData.id;
+        let currentLayout = 'force';
+        let svg, g, zoom, defs;
+        let nodes, links;
+        let simulation;
+        let nodeDistance = 150;
+        let rightBias = 0.7;
+        const nodeWidth = 150;
+        const nodeHeight = 50;
 
-        function renderTree(data, parentElement, level = 0, parentId = null, index = 0, total = 1) {
-            if (!data) return;
+        function initializeGraph() {
+            d3.select("#graph-container").selectAll("*").remove();
 
-            let levelContainer = document.querySelector(`.level-${level}`);
-            if (!levelContainer) {
-                levelContainer = document.createElement('div');
-                levelContainer.className = `tree-level level-${level}`;
-                parentElement.appendChild(levelContainer);
-            }
+            svg = d3.select("#graph-container")
+                .append("svg")
+                .attr("width", "100%")
+                .attr("height", "100%");
 
-            const nodeKey = `node-${data.id}`;
-            let node = document.getElementById(nodeKey);
-
-            if (!node) {
-                node = document.createElement('div');
-                node.className = 'chapter-node';
-                node.id = nodeKey;
-                levelContainer.appendChild(node);
-
-                const btn = document.createElement('button');
-                btn.className = `chapter-btn ${data.id === currentChapterId ? 'current' : ''}`;
-                btn.textContent = `${data.title} (ID: ${data.id})`;
-                btn.onclick = function() {
-                    window.location.href = `/chapter/${data.id}`;
-                };
-                node.appendChild(btn);
-            }
-
-            if (parentId) {
-                if (!node.dataset.parentIds) {
-                    node.dataset.parentIds = parentId;
-                } else {
-                    node.dataset.parentIds += `,${parentId}`;
-                }
-            }
-            node.dataset.nodeId = data.id;
-            renderedNodes.add(data.id);
-
-            if (data.children && data.children.length > 0) {
-                const sortedChildren = [...data.children].sort((a, b) => {
-                    if (a.children && b.children) {
-                        return b.children.length - a.children.length;
-                    }
-                    return 0;
+            zoom = d3.zoom()
+                .scaleExtent([0.1, 5])
+                .on("zoom", (event) => {
+                    g.attr("transform", event.transform);
                 });
+            svg.call(zoom);
 
-                sortedChildren.forEach((child, i) => {
-                    if (!renderedNodes.has(child.id)) {
-                        renderTree(child, parentElement, level + 1, data.id, i, data.children.length);
-                    } else {
-                        const childNode = document.getElementById(`node-${child.id}`);
-                        if (childNode) {
-                            if (!childNode.dataset.parentIds) {
-                                childNode.dataset.parentIds = data.id;
-                            } else if (!childNode.dataset.parentIds.includes(data.id.toString())) {
-                                childNode.dataset.parentIds += `,${data.id}`;
-                            }
-                        }
-                    }
-                });
-            }
+            g = svg.append("g");
+
+            // Arrow marker definition with adjusted refX
+            defs = svg.append("defs");
+            defs.append("marker")
+                .attr("id", "arrowhead")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 10)  // Adjusted to stop at edge
+                .attr("refY", 0)
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("class", "arrow");
+
+            processGraphData();
+            updateLayout(currentLayout);
+
+            document.getElementById('distanceSlider').value = nodeDistance;
+            document.getElementById('distanceValue').textContent = nodeDistance;
+            document.getElementById('rightBiasSlider').value = rightBias * 100;
+            document.getElementById('rightBiasValue').textContent = Math.round(rightBias * 100) + '%';
         }
 
-        function drawConnections() {
-            const svg = document.getElementById('connectors');
-            svg.innerHTML = '';
-            svg.setAttribute('width', document.querySelector('.tree-container').scrollWidth);
-            svg.setAttribute('height', document.querySelector('.tree-container').scrollHeight);
+        function processGraphData() {
+            const nodeMap = new Map();
+            nodes = [];
+            links = [];
 
-            const nodes = document.querySelectorAll('.chapter-node');
-            nodePositions = {};
-
-            // Сначала собираем позиции всех узлов
-            nodes.forEach(node => {
-                const rect = node.getBoundingClientRect();
-                const containerRect = document.querySelector('.tree-container').getBoundingClientRect();
-                const btnRect = node.querySelector('.chapter-btn').getBoundingClientRect();
-
-                nodePositions[node.dataset.nodeId] = {
-                    left: btnRect.left - containerRect.left,
-                    right: btnRect.right - containerRect.left,
-                    top: btnRect.top - containerRect.top,
-                    bottom: btnRect.bottom - containerRect.top,
-                    width: btnRect.width,
-                    height: btnRect.height,
-                    centerX: btnRect.left - containerRect.left + btnRect.width / 2,
-                    centerY: btnRect.top - containerRect.top + btnRect.height / 2,
-                    parentIds: node.dataset.parentIds ? node.dataset.parentIds.split(',') : []
-                };
-            });
-
-            // Затем рисуем соединения
-            Object.keys(nodePositions).forEach(nodeId => {
-                const node = nodePositions[nodeId];
-                if (node.parentIds && node.parentIds.length > 0) {
-                    node.parentIds.forEach(parentId => {
-                        const parent = nodePositions[parentId];
-                        if (parent) {
-                            // Начальная точка (правая сторона родителя)
-                            const startX = parent.right;
-                            const startY = parent.centerY;
-
-                            // Конечная точка (левая сторона ребенка)
-                            const endX = node.left;
-                            const endY = node.centerY;
-
-                            // Вычисляем промежуточные точки для плавного изгиба
-                            const horizontalGap = Math.abs((endX - startX) * 0.2);
-                            const verticalGap = Math.abs(endY - startY) * 0.5;
-
-                            // Точки изгиба
-                            const controlX1 = startX + horizontalGap;
-                            const controlY1 = startY + verticalGap;
-                            const controlX2 = endX - horizontalGap;
-                            const controlY2 = endY - verticalGap;
-
-                            // Проверяем, не пересекает ли линия другие кнопки
-                            const midY = (startY + endY) / 2;
-                            let needsAdjustment = false;
-
-                            // Проверяем все узлы на возможное пересечение
-                            Object.keys(nodePositions).forEach(otherNodeId => {
-                                const otherNode = nodePositions[otherNodeId];
-                                if (otherNodeId !== nodeId && otherNodeId !== parentId) {
-                                    // Проверяем пересечение с прямоугольником кнопки
-                                    if (
-                                        (startX < otherNode.right && endX > otherNode.left) &&
-                                        ((startY < otherNode.bottom && midY > otherNode.top) ||
-                                         (midY < otherNode.bottom && endY > otherNode.top))
-                                    ) {
-                                        needsAdjustment = true;
-                                    }
-                                }
-                            });
-
-                            // Если нужно избежать пересечения, добавляем дополнительную точку изгиба
-                            if (needsAdjustment) {
-                                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                                const adjustment = Math.min(100, Math.abs(endY - startY) * 0.5 * (startX / 120));
-                                const adjustedY = startY < endY ? startY + adjustment : startY - adjustment;
-
-                                path.setAttribute('d',
-                                    `M${startX},${startY}
-                                     C${startX + horizontalGap},${startY} ${startX + horizontalGap},${adjustedY} ${startX + horizontalGap*1.5},${adjustedY}
-                                     L${endX - horizontalGap*1.5},${adjustedY}
-                                     C${endX - horizontalGap},${adjustedY} ${endX - horizontalGap},${endY} ${endX},${endY}`
-                                );
-                                path.setAttribute('stroke', '#888');
-                                path.setAttribute('stroke-width', '2');
-                                path.setAttribute('fill', 'none');
-                                svg.appendChild(path);
-                            } else {
-                                // Рисуем обычный плавный изгиб
-                                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                                path.setAttribute('d',
-                                    `M${startX},${startY}
-                                     C${controlX1},${controlY1} ${controlX2},${controlY2} ${endX},${endY}`
-                                );
-                                path.setAttribute('stroke', '#888');
-                                path.setAttribute('stroke-width', '2');
-                                path.setAttribute('fill', 'none');
-                                svg.appendChild(path);
-                            }
-                        }
-                    });
-                }
-            });
-        }
-
-        function sortTree(by) {
-            function sortChildren(node) {
-                if (node.children && node.children.length > 0) {
-                    node.children.sort((a, b) => {
-                        if (by === 'title') {
-                            return a.title.localeCompare(b.title);
-                        } else {
-                            return a.id - b.id;
-                        }
-                    });
-                    node.children.forEach(sortChildren);
-                }
-            }
-
-            sortChildren(treeData);
-            document.getElementById('tree').innerHTML = '';
-            renderedNodes.clear();
-            renderTree(treeData, document.getElementById('tree'));
-            setTimeout(drawConnections, 50);
-        }
-
-        function optimizeLayout() {
-            const tree = document.getElementById('tree');
-            const levels = tree.querySelectorAll('.tree-level');
-
-            levels.forEach((level, levelIndex) => {
-                const nodes = level.querySelectorAll('.chapter-node');
-                let hasChildren = false;
-
-                nodes.forEach(node => {
-                    const nodeId = node.dataset.nodeId;
-                    if (treeDataHasChildren(nodeId)) {
-                        hasChildren = true;
-                    }
-                });
-
-                if (!hasChildren && levelIndex < levels.length - 1) {
-                    const nextLevel = levels[levelIndex + 1];
-                    if (nextLevel) {
-                        const nextNodes = nextLevel.querySelectorAll('.chapter-node');
-                        nextNodes.forEach(node => {
-                            level.appendChild(node);
+            function processNode(node, parentId = null) {
+                if (nodeMap.has(node.id)) {
+                    if (parentId) {
+                        links.push({
+                            source: parentId,
+                            target: node.id
                         });
-                        nextLevel.remove();
                     }
+                    return;
                 }
-            });
 
-            setTimeout(drawConnections, 50);
-        }
+                const newNode = {
+                    id: node.id,
+                    title: node.title,
+                    x: 0,
+                    y: 0,
+                    isRoot: node.id === rootChapterId
+                };
+                nodes.push(newNode);
+                nodeMap.set(node.id, newNode);
 
-        function treeDataHasChildren(nodeId) {
-            function findNode(data, id) {
-                if (data.id == id) return data;
-                if (data.children) {
-                    for (let child of data.children) {
-                        const found = findNode(child, id);
-                        if (found) return found;
-                    }
+                if (parentId) {
+                    links.push({
+                        source: parentId,
+                        target: node.id
+                    });
                 }
-                return null;
+
+                if (node.children && node.children.length > 0) {
+                    node.children.forEach(child => {
+                        processNode(child, node.id);
+                    });
+                }
             }
 
-            const node = findNode(treeData, nodeId);
-            return node && node.children && node.children.length > 0;
+            processNode(graphData);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            renderTree(treeData, document.getElementById('tree'));
-            setTimeout(() => {
-                drawConnections();
-                optimizeLayout();
-            }, 50);
+        function updateLayout(layoutType) {
+            currentLayout = layoutType;
+            g.selectAll(".node, .link").remove();
 
-            // Оптимизация: откладываем перерисовку при ресайзе
-            let resizeTimer;
-            window.addEventListener('resize', () => {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(() => {
-                    drawConnections();
-                    optimizeLayout();
-                }, 200);
+            if (layoutType === 'dagre') {
+                drawDagreLayout();
+            } else if (layoutType === 'force') {
+                drawForceLayout();
+            }
+        }
+
+        function drawDagreLayout() {
+            const dagreGraph = new dagre.graphlib.Graph()
+                .setGraph({
+                    rankdir: "LR",
+                    marginx: 20,
+                    marginy: 20,
+                    nodesep: nodeDistance * 0.3,
+                    edgesep: 20,
+                    ranksep: nodeDistance
+                })
+                .setDefaultEdgeLabel(() => ({}));
+
+            nodes.forEach(node => {
+                dagreGraph.setNode(node.id, {
+                    width: nodeWidth,
+                    height: nodeHeight,
+                    title: node.title,
+                    isRoot: node.isRoot
+                });
             });
-        });
+
+            links.forEach(link => {
+                dagreGraph.setEdge(link.source, link.target);
+            });
+
+            dagre.layout(dagreGraph);
+
+            // Draw nodes
+            const nodeElements = g.selectAll(".node")
+                .data(nodes)
+                .enter().append("g")
+                .attr("class", d => `node ${d.isRoot ? 'start-node' : ''}`)
+                .attr("transform", d => {
+                    const node = dagreGraph.node(d.id);
+                    return `translate(${node.x - node.width / 2},${node.y - node.height / 2})`;
+                });
+
+            nodeElements.append("rect")
+                .attr("width", nodeWidth)
+                .attr("height", nodeHeight)
+                .on("click", d => {
+                    window.location.href = `/chapter/${d.id}`;
+                });
+
+            nodeElements.append("text")
+                .attr("x", nodeWidth / 2)
+                .attr("y", nodeHeight / 2)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "middle")
+                .text(d => d.title);
+
+            // Draw edges with arrows connecting to edges
+            const linkElements = g.selectAll(".link")
+                .data(links)
+                .enter().append("path")
+                .attr("class", "link")
+                .attr("marker-end", "url(#arrowhead)")
+                .attr("d", d => {
+                    const sourceNode = dagreGraph.node(d.source);
+                    const targetNode = dagreGraph.node(d.target);
+
+                    // Calculate direction vector
+                    const dx = targetNode.x - sourceNode.x;
+                    const dy = targetNode.y - sourceNode.y;
+                    const length = Math.sqrt(dx * dx + dy * dy);
+                    const nx = dx / length;
+                    const ny = dy / length;
+
+                    // Calculate intersection points with rectangle edges
+                    const sourceX = sourceNode.x + (nx > 0 ? sourceNode.width/2 : -sourceNode.width/2);
+                    const sourceY = sourceNode.y + (ny > 0 ? sourceNode.height/2 : -sourceNode.height/2);
+
+                    const targetX = targetNode.x + (nx < 0 ? targetNode.width/2 : -targetNode.width/2);
+                    const targetY = targetNode.y + (ny < 0 ? targetNode.height/2 : -targetNode.height/2);
+
+                    return `M${sourceX},${sourceY}L${targetX},${targetY}`;
+                });
+
+            zoomFit();
+        }
+
+        function drawForceLayout() {
+            if (simulation) simulation.stop();
+
+            const centerX = svg.node().clientWidth / 2;
+            const rightBiasForce = d3.forceX()
+                .x(d => {
+                    if (d.isRoot) return centerX;
+                    return centerX * (1 + rightBias);
+                })
+                .strength(d => d.isRoot ? 0.5 : 0.1);
+
+            simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(nodeDistance))
+                .force("charge", d3.forceManyBody().strength(-nodeDistance))
+                .force("rightBias", rightBiasForce)
+                .force("y", d3.forceY().y(d => d.isRoot ? svg.node().clientHeight / 3 : null).strength(d => d.isRoot ? 0.5 : 0.05))
+                .force("collision", d3.forceCollide().radius(60));
+
+            // Draw links with arrows connecting to edges
+            const linkElements = g.selectAll(".link")
+                .data(links)
+                .enter().append("path")
+                .attr("class", "link")
+                .attr("marker-end", "url(#arrowhead)");
+
+            // Draw nodes
+            const nodeElements = g.selectAll(".node")
+                .data(nodes)
+                .enter().append("g")
+                .attr("class", d => `node ${d.isRoot ? 'start-node' : ''}`)
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+            nodeElements.append("rect")
+                .attr("width", nodeWidth)
+                .attr("height", nodeHeight)
+                .attr("rx", 5)
+                .attr("ry", 5)
+                .on("click", d => {
+                    window.location.href = `/chapter/${d.id}`;
+                });
+
+            nodeElements.append("text")
+                .attr("x", nodeWidth / 2)
+                .attr("y", nodeHeight / 2)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "middle")
+                .text(d => d.title);
+
+            simulation.on("tick", () => {
+                linkElements.attr("d", d => {
+                    const source = d.source;
+                    const target = d.target;
+
+                    // Calculate direction vector
+                    const dx = target.x - source.x;
+                    const dy = target.y - source.y;
+                    const length = Math.sqrt(dx * dx + dy * dy);
+                    const nx = dx / length;
+                    const ny = dy / length;
+
+                    // Calculate intersection points with rectangle edges
+                    const sourceX = source.x + (nx > 0 ? nodeWidth/2 : -nodeWidth/2);
+                    const sourceY = source.y + (ny > 0 ? nodeHeight/2 : -nodeHeight/2);
+
+                    const targetX = target.x + (nx < 0 ? nodeWidth/2 : -nodeWidth/2);
+                    const targetY = target.y + (ny < 0 ? nodeHeight/2 : -nodeHeight/2);
+
+                    // Curved path
+                    const midX = (sourceX + targetX) / 2;
+                    return `M${sourceX},${sourceY}Q${midX},${sourceY} ${midX},${targetY}T${targetX},${targetY}`;
+                });
+
+                nodeElements.attr("transform", d => `translate(${d.x - nodeWidth/2},${d.y - nodeHeight/2})`);
+            });
+
+            // Fix root node position
+            const rootNode = nodes.find(n => n.isRoot);
+            if (rootNode) {
+                rootNode.fx = svg.node().clientWidth / 2;
+                rootNode.fy = svg.node().clientHeight / 3;
+            }
+
+            zoomFit();
+        }
+
+        function updateDistance() {
+            nodeDistance = parseInt(document.getElementById('distanceSlider').value);
+            document.getElementById('distanceValue').textContent = nodeDistance;
+
+            if (currentLayout === 'force') {
+                simulation.force("link").distance(nodeDistance);
+                simulation.force("charge").strength(-nodeDistance);
+                simulation.alpha(0.3).restart();
+            } else if (currentLayout === 'dagre') {
+                drawDagreLayout();
+            }
+        }
+
+        function updateRightBias() {
+            rightBias = parseInt(document.getElementById('rightBiasSlider').value) / 100;
+            document.getElementById('rightBiasValue').textContent = Math.round(rightBias * 100) + '%';
+
+            if (currentLayout === 'force') {
+                simulation.force("rightBias")
+                    .x(d => {
+                        const centerX = svg.node().clientWidth / 2;
+                        if (d.isRoot) return centerX;
+                        return centerX * (1 + rightBias);
+                    });
+                simulation.alpha(0.3).restart();
+            }
+        }
+
+        function zoomFit() {
+            const bounds = g.node().getBBox();
+            const parent = svg.node().parentNode;
+            const fullWidth = parent.clientWidth;
+            const fullHeight = parent.clientHeight;
+            const width = bounds.width;
+            const height = bounds.height;
+            const midX = bounds.x + width / 2;
+            const midY = bounds.y + height / 2;
+
+            if (width === 0 || height === 0) return;
+
+            const scale = 0.9 / Math.max(width / fullWidth, height / fullHeight);
+            const translate = [
+                fullWidth / 2 - scale * midX,
+                fullHeight / 2 - scale * midY
+            ];
+
+            svg.transition()
+                .duration(500)
+                .call(
+                    zoom.transform,
+                    d3.zoomIdentity
+                        .translate(translate[0], translate[1])
+                        .scale(scale)
+                );
+        }
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            if (!d.isRoot) {
+                d.fx = null;
+                d.fy = null;
+            }
+        }
+
+        // Load dagre library and initialize
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js';
+        script.onload = initializeGraph;
+        document.head.appendChild(script);
     </script>
 </body>
 </html>

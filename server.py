@@ -152,8 +152,6 @@ def profile(id):
 @app.route('/redact')
 @login_required
 def redact():
-    # db_sess = db_session.create_session()
-    # user = db_sess.query(User).get(id)
     form = RegisterForm()
     return render_template('redact.html', title=f"redact rofile", form=form)
 
