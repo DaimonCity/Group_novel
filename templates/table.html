@@ -79,7 +79,7 @@
 </head>
 <body>
     <div class="controls">
-        <button onclick="zoomFit()">Подогнать по размеру</button>
+        <button onclick="zoomFit()">К первой главе</button>
 
         <div class="slider-container">
             <span class="slider-label">Расстояние между узлами:</span>
@@ -99,7 +99,7 @@
             <span id="repulsionValue">300</span>
         </div>
 
-        <span id="root-info">Начальная глава: {{ tree_data.title }} (ID: {{ tree_data.id }})</span>
+<!--        <span id="root-info">Начальная глава: {{ tree_data.title }} (ID: {{ tree_data.id }})</span>-->
     </div>
     <div class="graph-container" id="graph-container"></div>
 
@@ -256,8 +256,8 @@
                 .attr("height", nodeHeight)
                 .attr("rx", 5)
                 .attr("ry", 5)
-                .on("click", d => {
-                    window.location.href = `/chapter/${d.id}`;
+                .on("click", function(event, d) {
+                    window.location.href = `/read/${d.id}`;
                 });
 
             nodeElements.append("text")
@@ -266,6 +266,7 @@
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "middle")
                 .text(d => d.title);
+
 
             simulation.on("tick", () => {
                 linkElements.attr("d", d => {
