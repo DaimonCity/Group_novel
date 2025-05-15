@@ -235,13 +235,14 @@ def chapter_tree(chapter_id):
 
 
 def test():
-    # db_sess = db_session.create_session()
-    # chapter = db_sess.query(Chapter).get(1)
-    # chapter.next = json.dumps([2, 9, 8, 7])
-    # db_sess.commit()
+    db_sess = db_session.create_session()
+    chapter = db_sess.query(Chapter).get(1)
+    chapter.next = json.dumps([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+    db_sess.commit()
     pass
 
 if __name__ == '__main__':
     db_session.global_init("db/main.db")
+    test()
     print(chapter_tree(1))
     app.run(debug=True)

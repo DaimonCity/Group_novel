@@ -256,7 +256,7 @@
                 .attr("text-anchor", "middle")
                 .text(d => d.title);
 
-            // Draw edges with arrows connecting to edges
+            // Draw edges with properly oriented arrows
             const linkElements = g.selectAll(".link")
                 .data(links)
                 .enter().append("path")
@@ -277,10 +277,16 @@
                     const sourceX = sourceNode.x + (nx > 0 ? sourceNode.width/2 : -sourceNode.width/2);
                     const sourceY = sourceNode.y + (ny > 0 ? sourceNode.height/2 : -sourceNode.height/2);
 
-                    const targetX = targetNode.x + (nx < 0 ? targetNode.width/2 : -targetNode.width/2);
-                    const targetY = targetNode.y + (ny < 0 ? targetNode.height/2 : -targetNode.height/2);
+                    const targetX = targetNode.x - (nx > 0 ? targetNode.width/2 : -targetNode.width/2);
+                    const targetY = targetNode.y - (ny > 0 ? targetNode.height/2 : -targetNode.height/2);
 
-                    return `M${sourceX},${sourceY}L${targetX},${targetY}`;
+                    // Create smooth curve for the path
+                    const controlX1 = sourceX + (targetX - sourceX) * 0.3;
+                    const controlY1 = sourceY;
+                    const controlX2 = targetX - (targetX - sourceX) * 0.3;
+                    const controlY2 = targetY;
+
+                    return `M${sourceX},${sourceY}C${controlX1},${controlY1} ${controlX2},${controlY2} ${targetX},${targetY}`;
                 });
 
             zoomFit();
@@ -304,14 +310,14 @@
                 .force("y", d3.forceY().y(d => d.isRoot ? svg.node().clientHeight / 3 : null).strength(d => d.isRoot ? 0.5 : 0.05))
                 .force("collision", d3.forceCollide().radius(60));
 
-            // Draw links with arrows connecting to edges
+            // Draw links with properly oriented arrows
             const linkElements = g.selectAll(".link")
                 .data(links)
                 .enter().append("path")
                 .attr("class", "link")
                 .attr("marker-end", "url(#arrowhead)");
 
-            // Draw nodes
+            // Draw nodes (сохраняем предыдущую реализацию)
             const nodeElements = g.selectAll(".node")
                 .data(nodes)
                 .enter().append("g")
@@ -353,12 +359,16 @@
                     const sourceX = source.x + (nx > 0 ? nodeWidth/2 : -nodeWidth/2);
                     const sourceY = source.y + (ny > 0 ? nodeHeight/2 : -nodeHeight/2);
 
-                    const targetX = target.x + (nx < 0 ? nodeWidth/2 : -nodeWidth/2);
-                    const targetY = target.y + (ny < 0 ? nodeHeight/2 : -nodeHeight/2);
+                    const targetX = target.x - (nx > 0 ? nodeWidth/2 : -nodeWidth/2);
+                    const targetY = target.y - (ny > 0 ? nodeHeight/2 : -nodeHeight/2);
 
-                    // Curved path
-                    const midX = (sourceX + targetX) / 2;
-                    return `M${sourceX},${sourceY}Q${midX},${sourceY} ${midX},${targetY}T${targetX},${targetY}`;
+                    // Create smooth curve for the path
+                    const controlX1 = sourceX + (targetX - sourceX) * 0.3;
+                    const controlY1 = sourceY;
+                    const controlX2 = targetX - (targetX - sourceX) * 0.3;
+                    const controlY2 = targetY;
+
+                    return `M${sourceX},${sourceY}C${controlX1},${controlY1} ${controlX2},${controlY2} ${targetX},${targetY}`;
                 });
 
                 nodeElements.attr("transform", d => `translate(${d.x - nodeWidth/2},${d.y - nodeHeight/2})`);
