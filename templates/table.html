@@ -1,18 +1,351 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chapter Tree with Side Connections</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .sort-btn {
+            padding: 8px 15px;
+            margin-right: 10px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .tree-container {
+            position: relative;
+            width: 100%;
+            min-height: 300px;
+            overflow-x: auto;
+        }
+        .tree {
+            display: flex;
+            position: relative;
+            min-height: 300px;
+            padding: 50px 0;
+        }
+        .tree-level {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            position: relative;
+            min-width: 200px;
+            margin-right: 30px;
+        }
+        .chapter-node {
+            position: relative;
+            margin: 10px 0;
+            z-index: 2;
+        }
+        .chapter-btn {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 2;
+            min-width: 150px;
+            white-space: nowrap;
+        }
+        .chapter-btn:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+        .chapter-btn.current {
+            background-color: #f44336;
+        }
+        .connectors {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button class="sort-btn" onclick="sortTree('title')">Sort by Title</button>
+        <button class="sort-btn" onclick="sortTree('id')">Sort by ID</button>
+    </div>
+    <div class="tree-container">
+        <div class="tree" id="tree"></div>
+        <svg class="connectors" id="connectors"></svg>
+    </div>
 
-{% block head %}
-{% endblock %}
-{% block content %}
-<!--   для табличной сортировки {% elif 1 %}-->
-<div>
-    {% for next_id in chapter.next %}
-        {% if project.author_id == current_user.id %}
-        <div class="make-project">
-<!--            <a href="/edit/{{ project.chapter_id }}">-->
-                <button class="button-project">{{project.title}}</button>
-<!--            </a>-->
-        </div>
-        {% endif %}
-    {% endfor %}
-</div>
-{% endblock %}
+    <script>
+        let treeData = {{ tree_data|tojson|safe }};
+        let currentChapterId = null;
+        let nodePositions = {};
+        let renderedNodes = new Set();
+
+        function renderTree(data, parentElement, level = 0, parentId = null, index = 0, total = 1) {
+            if (!data) return;
+
+            let levelContainer = document.querySelector(`.level-${level}`);
+            if (!levelContainer) {
+                levelContainer = document.createElement('div');
+                levelContainer.className = `tree-level level-${level}`;
+                parentElement.appendChild(levelContainer);
+            }
+
+            const nodeKey = `node-${data.id}`;
+            let node = document.getElementById(nodeKey);
+
+            if (!node) {
+                node = document.createElement('div');
+                node.className = 'chapter-node';
+                node.id = nodeKey;
+                levelContainer.appendChild(node);
+
+                const btn = document.createElement('button');
+                btn.className = `chapter-btn ${data.id === currentChapterId ? 'current' : ''}`;
+                btn.textContent = `${data.title} (ID: ${data.id})`;
+                btn.onclick = function() {
+                    window.location.href = `/chapter/${data.id}`;
+                };
+                node.appendChild(btn);
+            }
+
+            if (parentId) {
+                if (!node.dataset.parentIds) {
+                    node.dataset.parentIds = parentId;
+                } else {
+                    node.dataset.parentIds += `,${parentId}`;
+                }
+            }
+            node.dataset.nodeId = data.id;
+            renderedNodes.add(data.id);
+
+            if (data.children && data.children.length > 0) {
+                const sortedChildren = [...data.children].sort((a, b) => {
+                    if (a.children && b.children) {
+                        return b.children.length - a.children.length;
+                    }
+                    return 0;
+                });
+
+                sortedChildren.forEach((child, i) => {
+                    if (!renderedNodes.has(child.id)) {
+                        renderTree(child, parentElement, level + 1, data.id, i, data.children.length);
+                    } else {
+                        const childNode = document.getElementById(`node-${child.id}`);
+                        if (childNode) {
+                            if (!childNode.dataset.parentIds) {
+                                childNode.dataset.parentIds = data.id;
+                            } else if (!childNode.dataset.parentIds.includes(data.id.toString())) {
+                                childNode.dataset.parentIds += `,${data.id}`;
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function drawConnections() {
+            const svg = document.getElementById('connectors');
+            svg.innerHTML = '';
+            svg.setAttribute('width', document.querySelector('.tree-container').scrollWidth);
+            svg.setAttribute('height', document.querySelector('.tree-container').scrollHeight);
+
+            const nodes = document.querySelectorAll('.chapter-node');
+            nodePositions = {};
+
+            // Сначала собираем позиции всех узлов
+            nodes.forEach(node => {
+                const rect = node.getBoundingClientRect();
+                const containerRect = document.querySelector('.tree-container').getBoundingClientRect();
+                const btnRect = node.querySelector('.chapter-btn').getBoundingClientRect();
+
+                nodePositions[node.dataset.nodeId] = {
+                    left: btnRect.left - containerRect.left,
+                    right: btnRect.right - containerRect.left,
+                    top: btnRect.top - containerRect.top,
+                    bottom: btnRect.bottom - containerRect.top,
+                    width: btnRect.width,
+                    height: btnRect.height,
+                    centerX: btnRect.left - containerRect.left + btnRect.width / 2,
+                    centerY: btnRect.top - containerRect.top + btnRect.height / 2,
+                    parentIds: node.dataset.parentIds ? node.dataset.parentIds.split(',') : []
+                };
+            });
+
+            // Затем рисуем соединения
+            Object.keys(nodePositions).forEach(nodeId => {
+                const node = nodePositions[nodeId];
+                if (node.parentIds && node.parentIds.length > 0) {
+                    node.parentIds.forEach(parentId => {
+                        const parent = nodePositions[parentId];
+                        if (parent) {
+                            // Начальная точка (правая сторона родителя)
+                            const startX = parent.right;
+                            const startY = parent.centerY;
+
+                            // Конечная точка (левая сторона ребенка)
+                            const endX = node.left;
+                            const endY = node.centerY;
+
+                            // Вычисляем промежуточные точки для плавного изгиба
+                            const horizontalGap = Math.abs((endX - startX) * 0.2);
+                            const verticalGap = Math.abs(endY - startY) * 0.5;
+
+                            // Точки изгиба
+                            const controlX1 = startX + horizontalGap;
+                            const controlY1 = startY + verticalGap;
+                            const controlX2 = endX - horizontalGap;
+                            const controlY2 = endY - verticalGap;
+
+                            // Проверяем, не пересекает ли линия другие кнопки
+                            const midY = (startY + endY) / 2;
+                            let needsAdjustment = false;
+
+                            // Проверяем все узлы на возможное пересечение
+                            Object.keys(nodePositions).forEach(otherNodeId => {
+                                const otherNode = nodePositions[otherNodeId];
+                                if (otherNodeId !== nodeId && otherNodeId !== parentId) {
+                                    // Проверяем пересечение с прямоугольником кнопки
+                                    if (
+                                        (startX < otherNode.right && endX > otherNode.left) &&
+                                        ((startY < otherNode.bottom && midY > otherNode.top) ||
+                                         (midY < otherNode.bottom && endY > otherNode.top))
+                                    ) {
+                                        needsAdjustment = true;
+                                    }
+                                }
+                            });
+
+                            // Если нужно избежать пересечения, добавляем дополнительную точку изгиба
+                            if (needsAdjustment) {
+                                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                                const adjustment = Math.min(100, Math.abs(endY - startY) * 0.5 * (startX / 120));
+                                const adjustedY = startY < endY ? startY + adjustment : startY - adjustment;
+
+                                path.setAttribute('d',
+                                    `M${startX},${startY}
+                                     C${startX + horizontalGap},${startY} ${startX + horizontalGap},${adjustedY} ${startX + horizontalGap*1.5},${adjustedY}
+                                     L${endX - horizontalGap*1.5},${adjustedY}
+                                     C${endX - horizontalGap},${adjustedY} ${endX - horizontalGap},${endY} ${endX},${endY}`
+                                );
+                                path.setAttribute('stroke', '#888');
+                                path.setAttribute('stroke-width', '2');
+                                path.setAttribute('fill', 'none');
+                                svg.appendChild(path);
+                            } else {
+                                // Рисуем обычный плавный изгиб
+                                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                                path.setAttribute('d',
+                                    `M${startX},${startY}
+                                     C${controlX1},${controlY1} ${controlX2},${controlY2} ${endX},${endY}`
+                                );
+                                path.setAttribute('stroke', '#888');
+                                path.setAttribute('stroke-width', '2');
+                                path.setAttribute('fill', 'none');
+                                svg.appendChild(path);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        function sortTree(by) {
+            function sortChildren(node) {
+                if (node.children && node.children.length > 0) {
+                    node.children.sort((a, b) => {
+                        if (by === 'title') {
+                            return a.title.localeCompare(b.title);
+                        } else {
+                            return a.id - b.id;
+                        }
+                    });
+                    node.children.forEach(sortChildren);
+                }
+            }
+
+            sortChildren(treeData);
+            document.getElementById('tree').innerHTML = '';
+            renderedNodes.clear();
+            renderTree(treeData, document.getElementById('tree'));
+            setTimeout(drawConnections, 50);
+        }
+
+        function optimizeLayout() {
+            const tree = document.getElementById('tree');
+            const levels = tree.querySelectorAll('.tree-level');
+
+            levels.forEach((level, levelIndex) => {
+                const nodes = level.querySelectorAll('.chapter-node');
+                let hasChildren = false;
+
+                nodes.forEach(node => {
+                    const nodeId = node.dataset.nodeId;
+                    if (treeDataHasChildren(nodeId)) {
+                        hasChildren = true;
+                    }
+                });
+
+                if (!hasChildren && levelIndex < levels.length - 1) {
+                    const nextLevel = levels[levelIndex + 1];
+                    if (nextLevel) {
+                        const nextNodes = nextLevel.querySelectorAll('.chapter-node');
+                        nextNodes.forEach(node => {
+                            level.appendChild(node);
+                        });
+                        nextLevel.remove();
+                    }
+                }
+            });
+
+            setTimeout(drawConnections, 50);
+        }
+
+        function treeDataHasChildren(nodeId) {
+            function findNode(data, id) {
+                if (data.id == id) return data;
+                if (data.children) {
+                    for (let child of data.children) {
+                        const found = findNode(child, id);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            }
+
+            const node = findNode(treeData, nodeId);
+            return node && node.children && node.children.length > 0;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTree(treeData, document.getElementById('tree'));
+            setTimeout(() => {
+                drawConnections();
+                optimizeLayout();
+            }, 50);
+
+            // Оптимизация: откладываем перерисовку при ресайзе
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    drawConnections();
+                    optimizeLayout();
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>

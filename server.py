@@ -209,36 +209,41 @@ def make_project():
         return redirect(url_for('personal', user_id=curent_user_id))
     return redirect('/')
 
-@app.route("/open_table/<int:chapter_id>", methods=['POST'])
-@login_required
-def open_table(chapter_id):
+@app.route('/show_table/<int:chapter_id>')
+def show_table(chapter_id):
     tree = chapter_tree(chapter_id)
-    return redirect('/table', tree=tree)
+    current_chapter_id = chapter_id
+    return render_template('table.html', tree_data=tree, current_chapter_id=current_chapter_id)
 
 def chapter_tree(chapter_id):
-    tree = dict()
-    tree[chapter_id] = []
     db_sess = db_session.create_session()
     chapter = db_sess.query(Chapter).get(chapter_id)
-    if chapter:
-        if chapter.next is not None:
-            for i in json.loads(chapter.next):
-                if chapter_id in tree:
-                    tree[chapter_id].append(chapter_tree(i))
-                else:
-                    tree[chapter_id] = [chapter_tree(i)]
+    if not chapter:
+        return None
+
+    tree = {
+        'id': chapter.id,
+        'title': chapter.title,
+        'children': []
+    }
+
+    if chapter.next:
+        for child_id in json.loads(chapter.next):
+            child_tree = chapter_tree(child_id)
+            if child_tree:
+                tree['children'].append(child_tree)
+
     return tree
 
 
 def test():
     # db_sess = db_session.create_session()
-    # chapter = db_sess.query(Chapter).get(10)
-    # chapter.next = json.dumps([9, 8, 7])
+    # chapter = db_sess.query(Chapter).get(1)
+    # chapter.next = json.dumps([2, 9, 8, 7])
     # db_sess.commit()
     pass
 
 if __name__ == '__main__':
     db_session.global_init("db/main.db")
-    test()
-    # pprint(chapter_tree(1))
+    print(chapter_tree(1))
     app.run(debug=True)
