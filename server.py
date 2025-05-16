@@ -7,8 +7,8 @@ from data import db_session
 from data.users import User
 from data.chapters import Chapter
 from data.projects import Project
+import NS_api
 import json
-from pprint import pprint
 
 # from data.Сontinue_chapters import Сontinue_chapters
 
@@ -216,7 +216,6 @@ def show_table(chapter_id):
     return render_template('table.html', tree_data=tree, current_chapter_id=current_chapter_id)
 
 
-@blueprint.route('/api/chapter_tree/<int:chapter_id>')
 def chapter_tree(chapter_id):
     db_sess = db_session.create_session()
     chapter = db_sess.query(Chapter).get(chapter_id)
@@ -248,12 +247,5 @@ def chapter_tree(chapter_id):
 
 if __name__ == '__main__':
     db_session.global_init("db/main.db")
-
-    blueprint = flask.Blueprint(
-        'novel_api',
-        __name__,
-        template_folder='templates'
-    )
-
-    print(chapter_tree(13))
+    app.register_blueprint(NS_api.blueprint)
     app.run(debug=True)
