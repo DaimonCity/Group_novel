@@ -39,16 +39,23 @@ def edit(chapter_id):
     return render_template('docs.html', chapter=chapter)
 
 
-@app.route('/continue_chapter/<int:chapter_id>')
+@app.route('/continue_chapter/<int:chapter_id>', methods=['POST'])
 def continue_chapter(chapter_id):
     db_sess = db_session.create_session()
     chapter = db_sess.query(Chapter).get(chapter_id)
-    add_chapter()
-    chapter.continues_id.append()
-
+    title = request.form['title']
+    print(1)
+    print(title)
+    new_chapter = Chapter(author_id=flask_login.current_user.id, title=title, state=1, content='')
+    db_sess.add(new_chapter)
     db_sess.commit()
-    return render_template('index')
-
+    # chapter.next = json.dump(json.load(chapter.next).append(new_chapter))
+    k = json.loads(chapter.next)
+    k.append(new_chapter.id)
+    chapter.next = json.dumps(k)
+    db_sess.commit()
+    print(k, new_chapter.id)
+    return redirect(url_for('edit', chapter_id=new_chapter.id))
 
 @app.route('/add_chapter/<int:chapter_id>', methods=['POST'])
 def add_chapter(chapter_id):
@@ -241,5 +248,5 @@ def chapter_tree(chapter_id):
 if __name__ == '__main__':
     db_session.global_init("db/main.db")
     # test()
-    print(chapter_tree(1))
+    print(chapter_tree(13))
     app.run(debug=True)

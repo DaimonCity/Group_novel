@@ -2,6 +2,7 @@
 
 {% block head%}
 <link rel="stylesheet" href="../static/base.css">
+<link rel="stylesheet" href="../static/personal.css">
 {% endblock%}
 
 {% block content %}
@@ -13,7 +14,30 @@
     <a href="/vote/{{ chapter.id }}">
         <button class="vote-btn">👍</button>
     </a>
+    <div>
+            <button class="floating-button" onclick="openForm()">Создать проект</button>
+    </div>
+    <div class="make-project">
+            <form class="make-project-form" action="/continue_chapter/{{ chapter.id }}" method="POST" id="projectForm">
+                    <label><b>Новая глава</b></label><br>
+                    <label for="title"><input type="text" id="title" name="title" placeholder="Название" required></label>
+                    <label>
+                        <button name="project" class="btn" onclick="closeForm()" required>Сохранить</button>
+                        <button type="button" class="btn cancel" onclick="closeForm()">Отмена</button><br>
+                    </label>
+            </form>
+        </div>
     <form action="/">
         <button>назад</button>
     </form>
+
+<script>
+        function openForm() {
+          document.getElementById("projectForm").style.display = "block";
+        }
+
+        function closeForm() {
+          document.getElementById("projectForm").style.display = "none";
+        }
+        </script>
 {% endblock %}
