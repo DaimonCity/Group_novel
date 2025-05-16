@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+      body {
+    height: 100%;
+    margin: 0;
+    font-family: sans-serif;
+}
+
+.graph {
+    width: 30%;
+    height: 30%;
+    border: 1px solid gray;
+    padding: 10px;
+    position: relative;
+}
+
+.graph-grid {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-spacing: 0;
+    z-index: -1;
+}
+
+.graph-grid td {
+    border-left: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+    </style>
+</head>
+<body>
+<div class="graph">
+    Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+
+    <table class="graph-grid">
+        <tr><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td></tr>
+    </table>
+</div>
+</body>
+</html>

@@ -8,11 +8,11 @@
 <br>
 <h1>Все главы:</h1>
 {% for chapter in chapters %}
-    <a href="/show_table/{{ chapter.id }}">
+    <a href="/read/{{ chapter.id }}">
         <button class="editorSheet" style='overflow: hidden; border-radius: 10px; min-height: 10vw; max-height: 20vw'>
             <h2 style="margin-bottom: -10px">{{ chapter.title|safe }}</h2>
             <div style="overflow-wrap: anywhere">
-                <small style="margin-top: -10px">Автор: {{ chapter.author|safe }} | Дата: {{ chapter.date.strftime('%d.%m.%Y') }} | Голоса: {{ chapter.votes|safe }}</small>
+                <small style="margin-top: -10px">Автор: {{ current_user.name|safe }} | Дата: {{ chapter.date.strftime('%d.%m.%Y') }} | Голоса: {{ chapter.votes|safe }}</small>
                 <p>{{ chapter.content[:250]|safe }}</p>
             </div>
         </button>

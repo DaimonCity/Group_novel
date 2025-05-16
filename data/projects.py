@@ -7,7 +7,6 @@ from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, Text
 class Project(SqlAlchemyBase, UserMixin):
     __tablename__ = 'projects'
 
-    # id = Column(Integer, primary_key=True)
     author_id = Column(Integer, ForeignKey("users.id"))
     state = Column(Integer, default=0)  # 0-Private 1-Shown 2-Shown + Edit
     votes = Column(Integer, default=0)
