@@ -3,7 +3,6 @@ from flask_login import UserMixin
 from datetime import datetime
 from data.db_session import SqlAlchemyBase
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import ForeignKey
 
 
 # модель для пользователя
@@ -17,7 +16,7 @@ class User(SqlAlchemyBase, UserMixin):
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     created_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.now)
     chapters = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    img = sqlalchemy.Column(sqlalchemy.Integer, default=0)
+    img = sqlalchemy.Column(sqlalchemy.String, default='../static/0.jpg')
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)

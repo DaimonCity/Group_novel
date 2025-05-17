@@ -1,6 +1,8 @@
 import flask_login
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import login_user, login_required, logout_user, LoginManager
+from werkzeug.utils import secure_filename
+
 from forms.user import RegisterForm
 from forms.login import LoginForm
 from data import db_session
@@ -9,8 +11,6 @@ from data.chapters import Chapter
 from data.projects import Project
 import NS_api
 import json
-
-# from data.Сontinue_chapters import Сontinue_chapters
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -31,6 +31,7 @@ def index():
     chapters = [char for char in db_sess.query(Chapter).all() if char.state == 0]
     return render_template('index.html', chapters=chapters, title='Лента')
 
+
 @app.route('/edit/<int:chapter_id>')
 def edit(chapter_id):
     db_sess = db_session.create_session()
@@ -39,22 +40,17 @@ def edit(chapter_id):
 
 
 @app.route('/continue_chapter/<int:chapter_id>', methods=['POST'])
+@login_required
 def continue_chapter(chapter_id):
     db_sess = db_session.create_session()
-    chapter = db_sess.query(Chapter).get(chapter_id)
     title = request.form['title']
     print(1)
     print(title)
-    new_chapter = Chapter(author_id=flask_login.current_user.id, title=title, state=1, content='')
+    new_chapter = Chapter(author_id=flask_login.current_user.id, title=title, state=1, content='', parent=chapter_id)
     db_sess.add(new_chapter)
     db_sess.commit()
-    # chapter.next = json.dump(json.load(chapter.next).append(new_chapter))
-    k = json.loads(chapter.next)
-    k.append(new_chapter.id)
-    chapter.next = json.dumps(k)
-    db_sess.commit()
-    print(k, new_chapter.id)
     return redirect(url_for('edit', chapter_id=new_chapter.id))
+
 
 @app.route('/add_chapter/<int:chapter_id>', methods=['POST'])
 def add_chapter(chapter_id):
@@ -77,24 +73,24 @@ def vote(chapter_id):
     return redirect(url_for('index'))
 
 
-@app.route('/publish_chapter', methods=['POST'])
-def publish_chapter():
-    content = request.form['content']
-    name = request.form['name']
-    author_id = flask_login.current_user.id
-
-    if content and author_id:
-        db_sess = db_session.create_session()
-        new_chapter = Chapter(content=content, author_id=author_id, title=name)
-        db_sess.add(new_chapter)
-        db_sess.commit()
-        # Очищаем localStorage после успешной отправки
-        return redirect(url_for('edit'))
-    return "Ошибка: текст или автор не указаны", 400
+# @app.route('/publish_chapter', methods=['POST'])
+# def publish_chapter():
+#     content = request.form['content']
+#     name = request.form['name']
+#     author_id = flask_login.current_user.id
+#
+#     if content and author_id:
+#         db_sess = db_session.create_session()
+#         new_chapter = Chapter(content=content, author_id=author_id, title=name)
+#         db_sess.add(new_chapter)
+#         db_sess.commit()
+#         # Очищаем localStorage после успешной отправки
+#         return redirect(url_for('edit'))
+#     return "Ошибка: текст или автор не указаны", 400
 
 
 @app.route('/register', methods=['GET', 'POST'])
-def reqister():
+def register():
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
@@ -144,11 +140,11 @@ def logout():
     return redirect("/")
 
 
-@app.route('/profile/<int:id>')
+@app.route('/profile/<int:user_id>')
 @login_required
-def profile(id):
+def profile(user_id):
     db_sess = db_session.create_session()
-    user = db_sess.query(User).get(id)
+    user = db_sess.query(User).get(user_id)
     return render_template('profile.html', user=user, title=f"{user.name}'s Profile")
 
 
@@ -156,7 +152,7 @@ def profile(id):
 @login_required
 def redact():
     form = RegisterForm()
-    return render_template('redact.html', title=f"redact rofile", form=form)
+    return render_template('redact.html', title=f"redact profile", form=form)
 
 
 @app.route('/save_redact/<string:name><string:about>')
@@ -196,18 +192,19 @@ def personal(user_id):
 @app.route("/make_project", methods=['POST'])
 @login_required
 def make_project():
-    curent_user_id = flask_login.current_user.id
+    current_user_id = flask_login.current_user.id
     db_sess = db_session.create_session()
     title = request.form['title']
     if title:
-        new_chapter = Chapter(author_id=curent_user_id, title=title, content='')
+        new_chapter = Chapter(author_id=current_user_id, title=title, content='')
         db_sess.add(new_chapter)
         db_sess.commit()
-        new_project = Project(author_id=curent_user_id, title=title, chapter_id=new_chapter.id)
+        new_project = Project(author_id=current_user_id, title=title, chapter_id=new_chapter.id)
         db_sess.add(new_project)
         db_sess.commit()
-        return redirect(url_for('personal', user_id=curent_user_id))
+        return redirect(url_for('personal', user_id=current_user_id))
     return redirect('/')
+
 
 @app.route('/show_table/<int:chapter_id>')
 def show_table(chapter_id):
@@ -219,8 +216,11 @@ def show_table(chapter_id):
 def chapter_tree(chapter_id):
     db_sess = db_session.create_session()
     chapter = db_sess.query(Chapter).get(chapter_id)
+    child_chapters = db_sess.query(Chapter).filter(Chapter.parent == chapter_id)
+    # chapter = select(Chapter).where(Chapter.parent == chapter_id)
+
     if not chapter:
-        return None
+        return {}
 
     tree = {
         'id': chapter.id,
@@ -228,13 +228,28 @@ def chapter_tree(chapter_id):
         'children': []
     }
 
-    if chapter.next:
-        for child_id in json.loads(chapter.next):
-            child_tree = chapter_tree(child_id)
+    if child_chapters:
+        print(child_chapters)
+        for child in child_chapters:
+            child_tree = chapter_tree(child.id)
             if child_tree:
                 tree['children'].append(child_tree)
-
     return tree
+
+
+@app.route('/upload/<int:user_id>', methods=['POST'])
+@login_required
+def upload(user_id):
+    photo = request.files['file']
+    print(photo)
+    db_sess = db_session.create_session()
+    current_user_id = user_id
+    user = db_sess.query(User).get(current_user_id)
+    filename = secure_filename(photo.filename)
+    photo.save('static/img/' + filename)
+    user.img = '../static/img/' + filename
+    db_sess.commit()
+    return redirect(url_for('profile', user_id=current_user_id))
 
 
 # def test():
@@ -247,5 +262,6 @@ def chapter_tree(chapter_id):
 
 if __name__ == '__main__':
     db_session.global_init("db/main.db")
+    print(chapter_tree(1))
     app.register_blueprint(NS_api.blueprint)
     app.run(debug=True)

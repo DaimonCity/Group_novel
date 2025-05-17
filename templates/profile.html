@@ -2,24 +2,62 @@
 
 {% block head%}
 <link rel="stylesheet" href="../static/base.css">
+<link rel="stylesheet" href="../static/personal.css">
+
+<style>
+    #div1 {
+        width: 30vh;
+        height: 25vh;
+        position: absolute;
+        border: 1px solid #aaaaaa;
+        z-index: -5;
+    }
+</style>
+
 {% endblock %}
 
 {% block content %}
-    <img src="../ava/0.jpg">
-    <p>name: {{ user.name }}</p>
-    <p>date: {{ user.created_date }}</p>
-    <p>about: {{ user.about }}</p>
-    <p>mail: {{ user.email }}</p>
-    <p>index: {{ user.id }}</p>
+<img src="{{ user.img }}" alt="1" width="236" height="236"/>
+<p>name: {{ user.name }}</p>
+<p>date: {{ user.created_date }}</p>
+<p>about: {{ user.about }}</p>
+<p>mail: {{ user.email }}</p>
+<p>index: {{ user.id }}</p>
 
 <!--    {% if user.id == current_user.id %}-->
 <!--        <a href="/redact">-->
 <!--            <button>Настройка акаунта</button>-->
 <!--        </a>-->
 <!--    {% endif %}-->
-    <form action="/">
-        <button>назад</button>
+
+
+<div>
+    <button onclick="openForm()">Загрузка изображения</button>
+</div>
+<form onclick="history.back()">
+    <button>назад</button>
+</form>
+<div class="make-project">
+    <form class="make-project-form" enctype="multipart/form-data" action="/upload/{{ current_user.id }}" method="POST" id="projectForm"
+          style="position: absolute; align-items: center; justify-content: center">
+        <div>Нажмите на кнопку для выбора файла
+            <input type="file" id="photo" name="file">
+            <button type="submit">Отправить</button>
+        </div>
+
     </form>
+</div>
+
+<script>
+    function openForm() {
+        document.getElementById("projectForm").style.display = "block";
+    }
+
+    function closeForm() {
+        document.getElementById("projectForm").style.display = "none";
+    }
+</script>
+
 <br>
 <br>
 <br>

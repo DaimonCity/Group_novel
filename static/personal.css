@@ -21,10 +21,6 @@
     border: none;
 }
 
-body {
-    background-color: #f3d8a0;
-}
-
 h1 {
     text-align: center;
     color: #3e3825;
@@ -41,17 +37,6 @@ h1 {
     transform: translate(-50%, -50%);
 }
 
-.form-project {
-    color: #5c5130;
-    font-weight: bold;
-    text-align: center;
-    font-size: 24px;
-    position: absolute;
-    transform: translate(-50%, -50%);
-    background-color: #ffb50c;
-
-}
-
 .make-project-form {
     display: none;
     color: #5c5130;
@@ -66,6 +51,17 @@ h1 {
     border: 1px #121212 solid;
     z-index: 3;
     background-color: #ffb50c;
+}
+
+.form-project {
+    color: #5c5130;
+    font-weight: bold;
+    text-align: center;
+    font-size: 24px;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background-color: #ffb50c;
+
 }
 
 table {
