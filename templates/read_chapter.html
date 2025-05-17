@@ -15,7 +15,7 @@
         <button class="vote-btn">👍</button>
     </a>
     <div>
-            <button class="floating-button" onclick="openForm()">Создать проект</button>
+            <button class="floating-button" onclick="openForm()">Продолжить главу</button>
     </div>
     <div class="make-project">
             <form class="make-project-form" action="/continue_chapter/{{ chapter.id }}" method="POST" id="projectForm">
@@ -27,9 +27,7 @@
                     </label>
             </form>
         </div>
-    <form action="/">
-        <button>назад</button>
-    </form>
+<button onclick="history.back()">назад</button>
 
 <script>
         function openForm() {
