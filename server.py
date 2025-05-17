@@ -10,7 +10,6 @@ from data.users import User
 from data.chapters import Chapter
 from data.projects import Project
 import NS_api
-import json
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -71,22 +70,6 @@ def vote(chapter_id):
     chapter.votes += 1
     db_sess.commit()
     return redirect(url_for('index'))
-
-
-# @app.route('/publish_chapter', methods=['POST'])
-# def publish_chapter():
-#     content = request.form['content']
-#     name = request.form['name']
-#     author_id = flask_login.current_user.id
-#
-#     if content and author_id:
-#         db_sess = db_session.create_session()
-#         new_chapter = Chapter(content=content, author_id=author_id, title=name)
-#         db_sess.add(new_chapter)
-#         db_sess.commit()
-#         # Очищаем localStorage после успешной отправки
-#         return redirect(url_for('edit'))
-#     return "Ошибка: текст или автор не указаны", 400
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -159,14 +142,8 @@ def redact():
 @login_required
 def save_redact(name, about):
     db_sess = db_session.create_session()
-    # user_id = flask_login.current_user.id
     print(name, about, '!!!!!!')
-    # if name:
-    #     db_sess.query(`User`).get(user_id).update({'name': name})
-    # if about:
-    #     db_sess.query(User).get(user_id).update({'about': about})
     db_sess.commit()
-    # return redirect(url_for('profile', id=user_id))
 
 
 @app.route('/read/<int:chapter_id>')
@@ -217,7 +194,6 @@ def chapter_tree(chapter_id):
     db_sess = db_session.create_session()
     chapter = db_sess.query(Chapter).get(chapter_id)
     child_chapters = db_sess.query(Chapter).filter(Chapter.parent == chapter_id)
-    # chapter = select(Chapter).where(Chapter.parent == chapter_id)
 
     if not chapter:
         return {}

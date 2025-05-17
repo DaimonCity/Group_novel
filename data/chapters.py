@@ -17,4 +17,3 @@ class Chapter(SqlAlchemyBase, UserMixin):
     date = Column(DateTime, default=datetime.utcnow)
     content = Column(Text, nullable=False, default='')
     title = Column(Text, nullable=False)
-    # next = Column(ARRAY(Integer), nullable=True, default=json.dumps([]))
