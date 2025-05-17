@@ -162,8 +162,6 @@ def personal(user_id):
     if len(projects) == 0:
         return render_template('personal.html', user_id=user_id, projects=0)
     return render_template('personal.html', user_id=user_id, projects=projects)
-    # except Exception as e:
-    #     return render_template('personal.html', user=user, projects=0)
 
 
 @app.route("/make_project", methods=['POST'])
@@ -205,7 +203,6 @@ def chapter_tree(chapter_id):
     }
 
     if child_chapters:
-        print(child_chapters)
         for child in child_chapters:
             child_tree = chapter_tree(child.id)
             if child_tree:
@@ -217,7 +214,6 @@ def chapter_tree(chapter_id):
 @login_required
 def upload(user_id):
     photo = request.files['file']
-    print(photo)
     db_sess = db_session.create_session()
     current_user_id = user_id
     user = db_sess.query(User).get(current_user_id)
@@ -238,6 +234,5 @@ def upload(user_id):
 
 if __name__ == '__main__':
     db_session.global_init("db/main.db")
-    print(chapter_tree(1))
     app.register_blueprint(NS_api.blueprint)
     app.run(debug=True)
