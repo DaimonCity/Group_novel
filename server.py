@@ -10,6 +10,7 @@ from data.users import User
 from data.chapters import Chapter
 from data.projects import Project
 import NS_api
+import asyncio
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -224,15 +225,12 @@ def upload(user_id):
     return redirect(url_for('profile', user_id=current_user_id))
 
 
-# def test():
-#     db_sess = db_session.create_session()
-#     for i in range(1, 9):
-#         print(i)
-#         chapter = db_sess.query(Chapter).get(i)
-#         chapter.next = json.dumps([i + 1])
-#         db_sess.commit()
 
-if __name__ == '__main__':
+async def main():
     db_session.global_init("db/main.db")
+    print(chapter_tree(1))
     app.register_blueprint(NS_api.blueprint)
     app.run(debug=True)
+
+if __name__ == '__main__':
+    asyncio.run(main())
