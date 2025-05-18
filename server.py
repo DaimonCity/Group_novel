@@ -29,7 +29,7 @@ def load_user(user_id):
 def index():
     db_sess = db_session.create_session()
     chapters = [char for char in db_sess.query(Chapter).all() if char.state == 0]
-    return render_template('index.html', chapters=chapters, title='Лента')
+    return render_template('index.html', chapters=chapters, title='Лента', users=db_sess.query(User).all())
 
 
 @app.route('/edit/<int:chapter_id>')
