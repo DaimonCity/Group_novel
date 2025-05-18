@@ -11,6 +11,7 @@ from data.chapters import Chapter
 from data.projects import Project
 import NS_api
 import json
+import asyncio
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -217,7 +218,6 @@ def chapter_tree(chapter_id):
     db_sess = db_session.create_session()
     chapter = db_sess.query(Chapter).get(chapter_id)
     child_chapters = db_sess.query(Chapter).filter(Chapter.parent == chapter_id)
-    # chapter = select(Chapter).where(Chapter.parent == chapter_id)
 
     if not chapter:
         return {}
@@ -260,8 +260,11 @@ def upload(user_id):
 #         chapter.next = json.dumps([i + 1])
 #         db_sess.commit()
 
-if __name__ == '__main__':
+async def main():
     db_session.global_init("db/main.db")
     print(chapter_tree(1))
     app.register_blueprint(NS_api.blueprint)
     app.run(debug=True)
+
+if __name__ == '__main__':
+    asyncio.run(main())
