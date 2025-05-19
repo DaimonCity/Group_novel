@@ -24,8 +24,8 @@
 
         <div class="slider-container">
             <span class="slider-label">Сила отталкивания:</span>
-            <input type="range" id="repulsionSlider" min="50" max="20000" value="300" oninput="updateRepulsion()">
-            <span id="repulsionValue">300</span>
+            <input type="range" id="repulsionSlider" min="50" max="20000" value="10000" oninput="updateRepulsion()">
+            <span id="repulsionValue">10000</span>
         </div>
 
 <!--        <span id="root-info">Начальная глава: {{ tree_data.title }} (ID: {{ tree_data.id }})</span>-->
@@ -40,7 +40,7 @@
         let simulation;
         let nodeDistance = 150;
         let rightBias = 0.7;
-        let repulsionForce = -300;
+        let repulsionForce = -10000;
         const nodeWidth = 150;
         const nodeHeight = 50;
 
